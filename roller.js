@@ -1,12 +1,15 @@
 
 	exports.rollPool = function(pool)
 	{
-		console.log(`Asked to roll ${pool}`);
-		//if (! Number.isInteger(pool) ) return false;
+		console.log(`Asked to roll *${pool}*`);
+		pool = parseInt(pool);
+		if (! Number.isInteger(pool) ) return false;
+		console.log(Number.isInteger(pool));
 		if (pool < 0 || pool > 50 ) return false;
 		var roll = {
 			successes : 0,
-			text : ""
+			text : "",
+			dice: pool
 		};
 
 		for (let i = 0; i < pool; i++) {
