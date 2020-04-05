@@ -18,6 +18,7 @@
   "homepage": "https://github.com/wade-l/blood-and-dice#readme",
   "dependencies": {
     "discord.js": "^12.0.2",
+    "googleapis": "^39.2.0",
     "node-persist": "^3.0.5"
   }
 }
