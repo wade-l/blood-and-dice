@@ -27,7 +27,10 @@ client.on('ready', () => {
 client.on('message', async msg => {
 	console.log(`Recieved message: ${msg.content}`);
 	// Ignore bots
-	if (msg.author.bot) return;
+	if (msg.author.bot) {
+		console.log(msg.embeds[0]);
+		return;
+	}
 
 	// Ignore anything that doesn't start with our prefix
 	if (msg.content.indexOf(config.prefix) !== 0) return;
@@ -122,20 +125,29 @@ client.on('message', async msg => {
 		case 'sheet':
 			if (characters[userId] != undefined)
 			{
-
-				//let characterData = await getSheetData(character.characterName);
-				//console.log(characterData);
-				//let sheet = parseSheet(characterData);
 				let sheet = await keeper.getSheet(character.characterName);
 				console.log("Sheet:");
 				console.log(sheet);
-				let sheetMessage = `Character Sheet for ${sheet.characterName} pulled from GoogleDocs\r`;
-				sheetMessage += "```fix\r";
-				sheetMessage += `Character: \t ${sheet.characterName}\tPlayer: \t${sheet.playerName}\r`;
-				sheetMessage += `Vitae: \t\t ${sheet.vitae} / ${sheet.maxVitae}\r`;
-				sheetMessage += `Willpower: \t ${sheet.willpower} / ${sheet.maxWillpower}\r`;
-				sheetMessage += `Beats: \t\t ${sheet.beats} \t Experiences: ${sheet.experiences}\r`;
-				sheetMessage += "```\r";
+				let sheetMessage = `Character Sheet for ${sheet.characterName} pulled from GoogleDocs:\r`;
+				sheetMessage += sheet.getFormattedSheet();
+				msg.channel.send(sheetMessage);
+				//let embeds = sheet.getFormattedSheet();
+				//console.log(embeds);
+				//for (let index = 0; index < embeds.length; index++) {
+				//	msg.channel.send(embeds[index]);
+				//}
+			} else {
+				msg.reply("sorry, you don't appear to have a character assigned to you.");
+			}
+			break;
+		case 'stats':
+			if (characters[userId] != undefined)
+			{
+				let sheet = await keeper.getSheet(character.characterName);
+				console.log("Sheet:");
+				console.log(sheet);
+				let sheetMessage = `Statblock for ${sheet.characterName}:\r`;
+				sheetMessage += sheet.getFormattedStatBlock();
 				msg.reply(sheetMessage);
 			} else {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
@@ -182,9 +194,7 @@ client.on('message', async msg => {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
 			} if (adjustment.charAt(0) == '+') {
 				adjustment = adjustment.slice(1);
-				console.log(sheet);
 				sheet[command] += parseInt(adjustment);
-				console.log(sheet);
 				keeper.setStat(character.characterName,command,sheet[command]);
 				msg.reply(`you added ${adjustment} to your ${command} (new amount: ${sheet[command]}).\r`);
 			} else if (adjustment.charAt(0) == '-') {
@@ -210,6 +220,7 @@ client.on('message', async msg => {
 			help += "/conditions\t\tSee your conditions\r";
 			help += "/roll <X> \t\t Roll <X> dice\r";
 			help += "/sheet\t\tSee your character sheet\r";
+			help += "/stats\t\tSee brief character stats\r";
 			help += "/vitae/willpower/experience/beats <X>\t\t Sets that stat to <X>\r";
 			help += "/vitae/willpower/experience/beats +<X>\t\t Adds <X> to the stat.\r";
 			help += "/vitae/willpower/experience/beats -<X>\t\t Subtracts <X> from the stat.\r";
