@@ -5,17 +5,19 @@ const client = new Discord.Client();
 const config = require ("./config.json");
 const roller = require("./roller.js");
 const storage = require('node-persist');
+const vk = require("./vampire-keeper.js");
 
 // For Google API
+const {google} = require('googleapis');
+const gconn = require("./googleconnection.js");
+
 
 //const {google} = require('googleapis');
-const {google} = require('googleapis');
-const credentials = require("./credentials.json");
-const gconn = require("./googleconnection.js");
-const sheetId = '1OeSRHL38EheCYsdHpxX04cI5ghHqYeIf2u43hERyYI8';
 
 storage.init();
 
+let keeper = vk.VampireKeeper('1OeSRHL38EheCYsdHpxX04cI5ghHqYeIf2u43hERyYI8', require("./credentials.json"));
+keeper.testThis();
 
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.tag}!`);
@@ -121,9 +123,12 @@ client.on('message', async msg => {
 			if (characters[userId] != undefined)
 			{
 
-				let characterData = await getSheetData(character.characterName);
-				console.log(characterData);
-				let sheet = parseSheet(characterData);
+				//let characterData = await getSheetData(character.characterName);
+				//console.log(characterData);
+				//let sheet = parseSheet(characterData);
+				let sheet = await keeper.getSheet(character.characterName);
+				console.log("Sheet:");
+				console.log(sheet);
 				let sheetMessage = `Character Sheet for ${sheet.characterName} pulled from GoogleDocs\r`;
 				sheetMessage += "```fix\r";
 				sheetMessage += `Character: \t ${sheet.characterName}\tPlayer: \t${sheet.playerName}\r`;
@@ -139,8 +144,7 @@ client.on('message', async msg => {
 		case 'asp':
 		case 'aspirations':
 			if (characters[userId] != undefined) {
-				let characterData = await getSheetData(character.characterName);
-				let sheet = parseSheet(characterData);
+				let sheet = keeper.getSheet(character.characterName);
 				let aspirationsText = formatAspirations(sheet);
 				let replyText = `Aspirations for ${sheet.characterName}:\r`;
 				replyText += "```fix\r";
@@ -153,8 +157,7 @@ client.on('message', async msg => {
 			break;
 		case 'conditions':
 			if (characters[userId] != undefined) {
-				let characterData = await getSheetData(character.characterName);
-				let sheet = parseSheet(characterData);
+				let sheet = keeper.getSheet(character.characterName);
 				let conditionsText = formatConditions(sheet);
 				let replyText = `Conditions for ${sheet.characterName}:\r`;
 				replyText += "```fix\r";
@@ -172,26 +175,26 @@ client.on('message', async msg => {
 		case 'experiences':
 			console.log(`Trying to adjust ${command}`);
 
-			let characterData = await getSheetData(character.characterName);
-			console.log(characterData);
-			let sheet = parseSheet(characterData);
+			let sheet = await keeper.getSheet(character.characterName);
 
 			let adjustment = args.shift().toLowerCase();
 			if (characters[userId] == undefined) {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
 			} if (adjustment.charAt(0) == '+') {
 				adjustment = adjustment.slice(1);
+				console.log(sheet);
 				sheet[command] += parseInt(adjustment);
-				setSheetValue(character.characterName,command, sheet[command]);
+				console.log(sheet);
+				keeper.setStat(character.characterName,command,sheet[command]);
 				msg.reply(`you added ${adjustment} to your ${command} (new amount: ${sheet[command]}).\r`);
 			} else if (adjustment.charAt(0) == '-') {
 				adjustment = adjustment.slice(1);
 				sheet[command] -= parseInt(adjustment);
-				setSheetValue(character.characterName,command, sheet[command]);
+				keeper.setStat(character.characterName,command,sheet[command]);
 				msg.reply(`you removed ${adjustment} from your ${command} (new amount: ${sheet[command]}).\r`);
 			} else if ( Number.isInteger(parseInt(adjustment))) {
 				sheet[command] = parseInt(adjustment);
-				setSheetValue(character.characterName,command, sheet[command]);
+				keeper.setStat(character.characterName,command,sheet[command]);
 				msg.reply(`you set your ${command} to ${adjustment}\r`);
 			} else {
 				msg.reply("I don't know what you were trying to do.");
@@ -222,87 +225,6 @@ client.on('message', async msg => {
 
 client.login(config.token);
 
-async function getSheetData(characterName) {
-	let auth = await gconn.getAuth(credentials);
-	const sheets = google.sheets({version: 'v4', auth});
-  	let characters =[];
-  	let res = await sheets.spreadsheets.values.get({
-    	spreadsheetId: sheetId,
-    	range: `${characterName}!A1:K50`,
- 	});
- 	let rows = res.data.values;
-	return rows;
-}
-
-async function setSheetValue(characterName, stat, value) {
-	let auth = await gconn.getAuth(credentials);
-	const sheets = google.sheets({version: 'v4', auth});
-
-	let cellId = 'I1';
-	switch (stat) {
-		case 'vitae':
-			cellId = 'H24';
-			break;
-		case 'willpower':
-			cellId = 'H22';
-			break;
-		case 'beats':
-			cellId = 'H31';
-			break;
-		case 'experiences':
-			cellId = 'H30';
-			break;
-	}
-	let range = `${characterName}!${cellId}:${cellId}`;
-	let body = { values: [
-			[ value ]
-		]
-	};
-	sheets.spreadsheets.values.update({
-		spreadsheetId: sheetId,
-		range: range,
-		valueInputOption: 'RAW',
-		resource: body
-
-	}).then((response) => {
-		console.log(`${response.data.updatedCells} cells updated.`);
-	});
-}
-
-function parseSheet(data) {
-	let sheet = {};
-	sheet.characterName = data[0][1];
-	sheet.playerName = data[0][4];
-	sheet.vitae = parseInt(data[23][7]);
-	sheet.maxVitae = parseInt(data[23][9]);
-	sheet.willpower = parseInt(data[21][7]);
-	sheet.maxWillpower = parseInt(data[21][9]);
-	sheet.experiences = parseInt(data[29][7]);
-	sheet.beats = parseInt(data[30][7]);
-	sheet.aspirations = [ data[1][9], data[2][9], data[3][9]];
-	sheet.conditions = [];
-	let conditionName = undefined;
-	let conditionText = undefined;
-	let moreConditions = true;
-	let cIndex = 6;
-	while (moreConditions) {
-		conditionName = data[cIndex][9];
-		conditionText = data[cIndex][10];
-		if (typeof conditionName === "undefined") {
-			moreConditions = false;
-		} else {
-			sheet.conditions.push({
-				name: conditionName,
-				text: conditionText
-			});
-		}
-		cIndex++;
-	}
-	console.log(sheet.conditions);
-
-	return sheet;
-
-}
 
 function formatAspirations(sheet) {
 	let index = 0;
