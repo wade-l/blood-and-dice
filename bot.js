@@ -63,7 +63,7 @@ client.on('message', async msg => {
 			break;
 		case 'roll':
 
-			roll = roller.rollPool(args.shift());
+			let roll = roller.rollPool(args.shift());
 			rolls.push(roll);
 
 			console.log(roll);
@@ -136,6 +136,35 @@ client.on('message', async msg => {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
 			}
 			break;
+		case 'asp':
+		case 'aspirations':
+			if (characters[userId] != undefined) {
+				let characterData = await getSheetData(character.characterName);
+				let sheet = parseSheet(characterData);
+				let aspirationsText = formatAspirations(sheet);
+				let replyText = `Aspirations for ${sheet.characterName}:\r`;
+				replyText += "```fix\r";
+				replyText += `${aspirationsText}`;
+				replyText +="```\r";
+				msg.reply(replyText);
+			} else {
+				msg.reply("sorry, you don't appear to have a character assigned to you.");
+			}
+			break;
+		case 'conditions':
+			if (characters[userId] != undefined) {
+				let characterData = await getSheetData(character.characterName);
+				let sheet = parseSheet(characterData);
+				let conditionsText = formatConditions(sheet);
+				let replyText = `Conditions for ${sheet.characterName}:\r`;
+				replyText += "```fix\r";
+				replyText += `${conditionsText}`;
+				replyText +="```\r";
+				msg.reply(replyText);
+			} else {
+				msg.reply("sorry, you don't appear to have a character assigned to you.");
+			}
+			break;
 		case 'vitae':
 		case 'health':
 		case 'willpower':
@@ -154,7 +183,7 @@ client.on('message', async msg => {
 				adjustment = adjustment.slice(1);
 				sheet[command] += parseInt(adjustment);
 				setSheetValue(character.characterName,command, sheet[command]);
-				msg.reply(`you added ${adjustment} to your ${command}(new amount: ${sheet[command]}).\r`);
+				msg.reply(`you added ${adjustment} to your ${command} (new amount: ${sheet[command]}).\r`);
 			} else if (adjustment.charAt(0) == '-') {
 				adjustment = adjustment.slice(1);
 				sheet[command] -= parseInt(adjustment);
@@ -172,11 +201,16 @@ client.on('message', async msg => {
 		case 'help':
 		default:
 			let help = "Commands:\r";
+			help += "```fix\r";
+			help += "/aspirations\t\tSee your aspirations\r";
+			help += "/asp\t\tSee your aspirations\r";
+			help += "/conditions\t\tSee your conditions\r";
 			help += "/roll <X> \t\t Roll <X> dice\r";
 			help += "/sheet\t\tSee your character sheet\r";
 			help += "/vitae/willpower/experience/beats <X>\t\t Sets that stat to <X>\r";
 			help += "/vitae/willpower/experience/beats +<X>\t\t Adds <X> to the stat.\r";
 			help += "/vitae/willpower/experience/beats -<X>\t\t Subtracts <X> from the stat.\r";
+			help += "```";
 			msg.reply(help);
 	}
 
@@ -194,7 +228,7 @@ async function getSheetData(characterName) {
   	let characters =[];
   	let res = await sheets.spreadsheets.values.get({
     	spreadsheetId: sheetId,
-    	range: `${characterName}!A1:J50`,
+    	range: `${characterName}!A1:K50`,
  	});
  	let rows = res.data.values;
 	return rows;
@@ -238,14 +272,60 @@ async function setSheetValue(characterName, stat, value) {
 function parseSheet(data) {
 	let sheet = {};
 	sheet.characterName = data[0][1];
-	sheet.playerName = data[0][3];
+	sheet.playerName = data[0][4];
 	sheet.vitae = parseInt(data[23][7]);
 	sheet.maxVitae = parseInt(data[23][9]);
 	sheet.willpower = parseInt(data[21][7]);
 	sheet.maxWillpower = parseInt(data[21][9]);
 	sheet.experiences = parseInt(data[29][7]);
 	sheet.beats = parseInt(data[30][7]);
+	sheet.aspirations = [ data[1][9], data[2][9], data[3][9]];
+	sheet.conditions = [];
+	let conditionName = undefined;
+	let conditionText = undefined;
+	let moreConditions = true;
+	let cIndex = 6;
+	while (moreConditions) {
+		conditionName = data[cIndex][9];
+		conditionText = data[cIndex][10];
+		if (typeof conditionName === "undefined") {
+			moreConditions = false;
+		} else {
+			sheet.conditions.push({
+				name: conditionName,
+				text: conditionText
+			});
+		}
+		cIndex++;
+	}
+	console.log(sheet.conditions);
 
 	return sheet;
 
+}
+
+function formatAspirations(sheet) {
+	let index = 0;
+	let formattedAspirations = "";
+	while (index < sheet.aspirations.length) {
+		formattedAspirations += sheet.aspirations[index];
+		formattedAspirations += "\r";
+		index++;
+	}
+
+	return formattedAspirations;
+}
+
+function formatConditions(sheet) {
+	let index = 0;
+	let formattedConditions = "";
+	while (index < sheet.conditions.length) {
+		formattedConditions += `** ${sheet.conditions[index].name} **\r`;
+		formattedConditions += sheet.conditions[index].text;
+		formattedConditions += "\r";
+
+		index++;
+	}
+
+	return formattedConditions;
 }
