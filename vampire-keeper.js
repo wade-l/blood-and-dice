@@ -3,6 +3,7 @@
 const {google} = require('googleapis');
 const gconn = require("./googleconnection.js");
 const Discord = require('discord.js');
+const roller = require("./roller.js");
 
 const attributes = [['intelligence','wits','resolve'],['strength','dexterity','stamina'], ['presence','manipulation','composure']]
 const skills = [
@@ -14,11 +15,6 @@ function VampireKeeper(sheetId, credentials) {
 	return {
 		'sheetId' : sheetId,
 		'credentials': credentials,
-		testThis: function () {
-			console.log("Test this");
-			console.log(sheetId);
-			console.log(this.sheetId);
-		},
 		getSheet: async function(id) {
 			let characterData = await getSheetData(id, sheetId, credentials);
 			return parseSheet(characterData);
@@ -42,6 +38,63 @@ function VampireKeeper(sheetId, credentials) {
 			if (typeof cellId != "undefined") {
 				await setSheetValue(value,cellId,id,sheetId,credentials);
 			}
+		},
+		roll: async function (rollString, characterId) {
+			const dividersRegex = /[+\-\#]/;
+			let sheet = await this.getSheet(characterId);
+			let rollText = "";
+			//let roll = roller.rollPool(rollString);
+
+			let nextIndex = rollString.search(dividersRegex);
+			let nextDivider = rollString.charAt(nextIndex);
+			console.log(`Rollstring is ${rollString}, nextIndex is ${nextIndex}, nextDivider is ${nextDivider}`);
+			let lastDivider = '';
+			let totalDice = 0;
+			let more = true;
+			let termCount = 0;
+			while (more) {
+				if (nextIndex == -1) {
+					more = false;
+					nextIndex = rollString.length;
+				}
+
+				let term = rollString.substring(0,nextIndex).trim();
+				console.log(`Nextindex: ${nextIndex}, NextDivider: ${nextDivider}, LastDivider: ${lastDivider}, RollString: *${rollString}*, term: *${term}*`);
+				nextDivider = rollString.charAt(nextIndex);
+
+				rollString = rollString.substring(nextIndex+1, rollString.length);
+				nextIndex = rollString.search(dividersRegex);
+
+
+				let dice = 0;
+				if (isNaN(term)) {
+					let stat = sheet.getStat(term);
+					if (lastDivider != '') rollText += " " + lastDivider + " ";
+					rollText += `${stat.name} (${stat.value})`;
+					dice = stat.value;
+				} else {
+					if (lastDivider != '') rollText += " " + lastDivider + " ";
+					rollText += `${term}`;
+					dice = parseInt(term);
+				}
+				if (lastDivider == '-') {
+					totalDice -= dice;
+				} else {
+					totalDice += dice;
+				}
+
+				termCount++;
+
+				lastDivider = nextDivider;
+			}
+
+			if (termCount > 1) {
+				rollText+= ` (${totalDice} dice total)`;
+			}
+
+
+			let roll = roller.rollPool(totalDice);
+			return `${rollText}, which came up ${roll.text} for **${roll.successes}** successes.`;
 		}
 	}	
 };
@@ -50,41 +103,46 @@ function VampireSheet (name) {
 	return {
 		'characterName' : name,
 		getFormattedSheet: function () {
-			const embeds = [];
-			let attributeEmbed = new Discord.MessageEmbed()
-				.setColor('#cf2923')
-				.setTitle("Attributes");
-			for (let row = 0; row < 3; row++) {
-				for (let column = 0; column < 3; column ++) {
-					let attribute = attributes[column][row];
-					let field = { name: firstCap(attribute), value: this[attribute], inline: true };
-					attributeEmbed.fields.push(field);
-				}
-			}
-			embeds.push(attributeEmbed);
-
-
-			let skillsEmbed = new Discord.MessageEmbed()
-				.setColor('#cf2923')
-				.setTitle("Skills");
-			for (let row = 0; row < 8; row++) {
-				for (let column = 0; column < 3; column ++) {					
-					let skill = skills[column][row];
-					let field = { name: firstCap(skill), value: this[skill], inline: true };
-					skillsEmbed.fields.push(field);
-				}
-			}
-			embeds.push(skillsEmbed);
-			//console.log(sheetEmbed);
-
-			//return embeds;
+			const embeds = [];			
 			let fSheet = "";
-			fSheet += "```\r";
+			fSheet += "```fix\r";
 			fSheet += `Character: \t ${this.characterName}\tPlayer: \t${this.playerName}\r`;
+			fSheet += "\rAttributes\r";
+
 			for (let row = 0; row < 3; row++) {
 				for (let column = 0; column < 3; column ++) {
 					let attribute = attributes[column][row];
 					fSheet += formatStat(attribute, this[attribute]);
+				}
+				fSheet += "\r";
+			}
+			fSheet += "\rSkills\r";
+
+			for (let row = 0; row < 8; row++) {
+				for (let column = 0; column < 3; column ++) {					
+					let skill = skills[column][row];
+					let skillvalue = this[skill];
+					if (typeof this.specialities[skill] != 'undefined') {
+						skill += "(" + this.specialities[skill] + ")";
+					}
+					fSheet += formatStat(skill, skillvalue);
+				}
+				fSheet += "\r"
+			}
+			
+			fSheet += "\r";
+
+			let maxRows = Math.max(4,this.disciplines.length, this.merits.length);
+			for (let i = 0; i < maxRows; i++) {
+				if (typeof this.disciplines[i] != 'undefined') {
+					fSheet += formatStat(this.disciplines[i].name, this.disciplines[i].value);
+				} else {
+					fSheet += formatStat("","");
+				}
+				if (typeof this.merits[i] != 'undefined') {
+					fSheet += formatStat(this.merits[i].name, this.merits[i].value);
+				} else {
+					fSheet += formatStat("","");
 				}
 				fSheet += "\r";
 			}
@@ -96,13 +154,54 @@ function VampireSheet (name) {
 		},
 		getFormattedStatBlock: function () {
 				let fSheet = "";
-				fSheet += "fix\r";
+				fSheet += "```fix\r";
 				fSheet += `Character: \t ${this.characterName}\tPlayer: \t${this.playerName}\r`;
 				fSheet += `Vitae: \t\t ${this.vitae} / ${this.maxVitae}\r`;
 				fSheet += `Willpower: \t ${this.willpower} / ${this.maxWillpower}\r`;
 				fSheet += `Beats: \t\t ${this.beats} \t Experiences: ${this.experiences}\r`;
 				fSheet += "```\r";
 				return fSheet;
+		},
+		getStat: function (stat) {
+			let matchedStat = [];
+			let allStats = attributes.flat(2).concat(skills.flat(2));
+
+			let matchStats = allStats.filter(function (s) {
+				return (s.substring(0,stat.length).localeCompare(stat) == 0);
+			})
+			for (let i = 0; i < matchStats.length; i++) {
+				matchedStat.push({
+					name: firstCap(matchStats[i]),
+					value: this[matchStats[i]]
+				});
+			}
+			
+			let matchDisciplines = this.disciplines.filter(function (d) {
+				return (d.name.substring(0,stat.length).localeCompare(stat) == 0);
+			});
+			for (let i = 0; i < matchDisciplines.length; i++) {
+				matchedStat.push({
+					name: firstCap(matchDisciplines[i].name),
+					value: matchDisciplines[i].value
+				});
+			}
+
+			let matchMerits = this.merits.filter(function (m) {
+				return (m.name.substring(0,stat.length).localeCompare(stat) == 0);
+			});
+			for (let i = 0; i < matchMerits.length; i++) {
+				matchedStat.push({
+					name: firstCap(matchMerits[i].name),
+					value: matchMerits[i].value
+				});
+			}
+
+			if (matchedStat.length == 1) {
+				return matchedStat[0];
+			} else {
+				throw new Error(`getStat: couldn't unambigiously determine stat (${stat}).`);
+			}
+
 		}
 	};
 }
@@ -157,7 +256,6 @@ function parseSheet(data) {
 			let skilldata = data[row+10][(column*3)+1];
 			let skillvalue = parseInt(skilldata);
 			if (! (skillvalue > 0) ) skillvalue = 0;	
-			console.log(`Skillname: ${skillname}, skilldata: ${skilldata}, skillvalue: ${skillvalue}`);
 			sheet[skillname] = skillvalue;
 			let speciality = data[row+10][(column*3)+2];
 			if (speciality) {
@@ -190,6 +288,47 @@ function parseSheet(data) {
 		}
 		cIndex++;
 	}
+
+	sheet.disciplines = [];
+	let disciplineName = undefined;
+	let disciplineRank = undefined;
+	let moreDisciplines = true;
+	let dIndex = 20;
+		while (moreDisciplines) {
+		disciplineName = data[dIndex][0];
+		disciplineName = disciplineName.toString().toLowerCase();
+		disciplineRank = data[dIndex][1];
+		if ((typeof disciplineName === "undefined") || disciplineName.length < 1) {
+			moreDisciplines = false;
+		} else {
+			sheet.disciplines.push({
+				name: disciplineName,
+				value: disciplineRank
+			});
+		}
+		dIndex++;
+	}
+
+	sheet.merits = [];
+	let meritName = undefined;
+	let meritRank = undefined;
+	let moreMerits = true;
+	let mIndex = 20;
+	while (moreMerits) {
+		meritName = data[mIndex][3];
+		meritName = meritName.toString().toLowerCase();
+		meritRank = data[mIndex][4];
+		if ((typeof meritName === "undefined") || meritName.length < 1) {
+			moreMerits = false;
+		} else {
+			sheet.merits.push({
+				name: meritName,
+				value: meritRank
+			});
+		}
+		mIndex++;
+	}
+
 	return sheet;
 }
 

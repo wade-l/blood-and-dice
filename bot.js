@@ -17,7 +17,6 @@ const gconn = require("./googleconnection.js");
 storage.init();
 
 let keeper = vk.VampireKeeper('1OeSRHL38EheCYsdHpxX04cI5ghHqYeIf2u43hERyYI8', require("./credentials.json"));
-keeper.testThis();
 
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.tag}!`);
@@ -67,19 +66,14 @@ client.on('message', async msg => {
 			msg.reply('pong');
 			break;
 		case 'roll':
+			if (characters[userId] != undefined)
+			{
+				let rollText = await keeper.roll(args.join(" ").toLowerCase(),character.characterName);
+				msg.channel.send(`${msg.member} rolled ${rollText}`);
 
-			let roll = roller.rollPool(args.shift());
-			rolls.push(roll);
-
-			console.log(roll);
-			let remainder = args.join(" ");
-			if (remainder.length > 0) {
-				remainder = "(" + remainder + ")";
 			} else {
-				remainder = "";
+				msg.reply("sorry, you don't appear to have a character assigned to you.");
 			}
-			msg.channel.send(`${msg.member} rolled ${roll.dice} dice, which came up ${roll.text} for ${roll.successes} successes ${remainder}`);
-
 			break;
 		case 'history':
 			msg.channel.send(rolls);
@@ -149,6 +143,22 @@ client.on('message', async msg => {
 				let sheetMessage = `Statblock for ${sheet.characterName}:\r`;
 				sheetMessage += sheet.getFormattedStatBlock();
 				msg.reply(sheetMessage);
+			} else {
+				msg.reply("sorry, you don't appear to have a character assigned to you.");
+			}
+			break;
+		case 'stat':
+			if (characters[userId] != undefined)
+			{
+				let sheet = await keeper.getSheet(character.characterName);
+				try {
+					let stat = sheet.getStat(args.shift().toLowerCase());
+					msg.reply(`Your ${stat.name} is ${stat.value}.`);
+				} catch (e) {
+					console.log("getStat error:");
+					console.log(e);
+					msg.reply("Couldn't unambigiously find a stat of that name. Maybe check your spelling or make it less ambigious?");
+				}
 			} else {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
 			}
