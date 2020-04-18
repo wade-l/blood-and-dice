@@ -5,7 +5,8 @@ const client = new Discord.Client();
 const config = require ("./config.json");
 const roller = require("./roller.js");
 const storage = require('node-persist');
-const vk = require("./vampire-keeper.js");
+//const vk = require("./vampire-keeper.js");
+const mhk = require("./monsterhearts-keeper.js");
 
 // For Google API
 const {google} = require('googleapis');
@@ -16,11 +17,12 @@ const gconn = require("./googleconnection.js");
 
 storage.init();
 
-let keeper = vk.VampireKeeper('1OeSRHL38EheCYsdHpxX04cI5ghHqYeIf2u43hERyYI8', require("./credentials.json"));
+//let keeper = vk.VampireKeeper('1OeSRHL38EheCYsdHpxX04cI5ghHqYeIf2u43hERyYI8', require("./credentials.json"));
+let keeper = mhk.MonsterHeartsKeeper('1jU_yUyURD6bIndIKyeZJb-vsnoY20M1kuOAD0GhY5xc', require("./credentials.json"));
 
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.tag}!`);
-	client.user.setActivity(`Vampire: the Requiem`);
+	client.user.setActivity(`Botting`);
 });
 
 client.on('message', async msg => {
@@ -88,12 +90,7 @@ client.on('message', async msg => {
 				if (user != undefined) {
 					let character = args.shift().toLowerCase();
 					characters[user.id] = {
-						"characterName" : character,
-						"vitae"	: 0,
-						"health" : 0,
-						"willpower" : 0,
-						"beats" : 0,
-						"experiences" : 0
+						"characterName" : character
 					};
 					msg.reply(`Assigned ${character} to ${user}`);
 				} else {
@@ -107,11 +104,13 @@ client.on('message', async msg => {
 			console.log("Attempting to list all characters");
 			let rosterString = "";
 			for (var key in characters) {
-				user = await client.users.fetch(key);
-				rosterString += `${user} is playing ${characters[key].characterName}.\r`;
-				console.log(user);
-				console.log(key);
-				console.log(characters[key]);
+				let user = await client.users.fetch(key);
+				if (typeof user != 'undefined') {
+					rosterString += `${user} is playing ${characters[key].characterName}.\r`;
+					console.log(user);
+					console.log(key);
+					console.log(characters[key]);
+				}
 			}
 
 			msg.reply(rosterString);
@@ -125,11 +124,6 @@ client.on('message', async msg => {
 				let sheetMessage = `Character Sheet for ${sheet.characterName} pulled from GoogleDocs:\r`;
 				sheetMessage += sheet.getFormattedSheet();
 				msg.channel.send(sheetMessage);
-				//let embeds = sheet.getFormattedSheet();
-				//console.log(embeds);
-				//for (let index = 0; index < embeds.length; index++) {
-				//	msg.channel.send(embeds[index]);
-				//}
 			} else {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
 			}
