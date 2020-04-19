@@ -107,3 +107,5 @@ dist
 config.json
 credentials.json
 token.json
+vampire-config.json
+

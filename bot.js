@@ -2,7 +2,7 @@
 "use strict";
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const config = require ("./config.json");
+const config = require ("./vampire-config.json");
 const roller = require("./roller.js");
 const storage = require('node-persist');
 const vk = require("./vampire-keeper.js");
@@ -24,12 +24,9 @@ client.on('ready', () => {
 });
 
 client.on('message', async msg => {
-	console.log(`Recieved message: ${msg.content}`);
+	console.log(`Received message: ${msg.content}`);
 	// Ignore bots
-	if (msg.author.bot) {
-		console.log(msg.embeds[0]);
-		return;
-	}
+	if (msg.author.bot) return;
 
 	// Ignore anything that doesn't start with our prefix
 	if (msg.content.indexOf(config.prefix) !== 0) return;
@@ -56,10 +53,16 @@ client.on('message', async msg => {
 		character = characters[userId];
 	}
 
+	// Grab the channel we'll send messages to
+	let msgDest = msg.channel;
 
 	// Seperate off the command
 	const args = msg.content.slice(config.prefix.length).trim().split(/ +/g);
-	const command = args.shift().toLowerCase();
+	let command = args.shift().toLowerCase();
+	if (command == "dm") {
+		msgDest = msg.author;
+		command = args.shift().toLowerCase();
+	}
 
 	switch (command) {
 		case 'ping':
@@ -68,8 +71,12 @@ client.on('message', async msg => {
 		case 'roll':
 			if (characters[userId] != undefined)
 			{
-				let rollText = await keeper.roll(args.join(" ").toLowerCase(),character.characterName);
-				msg.channel.send(`${msg.member} rolled ${rollText}`);
+				try {
+					let rollText = await keeper.roll(args.join(" ").toLowerCase(),character.characterName);
+					msgDest.send(`${msg.member} rolled ${rollText}`);
+				} catch (err) {
+					msg.reply(`Sorry, your roll encountered a problem (${err})`);
+				}
 
 			} else {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
@@ -124,12 +131,7 @@ client.on('message', async msg => {
 				console.log(sheet);
 				let sheetMessage = `Character Sheet for ${sheet.characterName} pulled from GoogleDocs:\r`;
 				sheetMessage += sheet.getFormattedSheet();
-				msg.channel.send(sheetMessage);
-				//let embeds = sheet.getFormattedSheet();
-				//console.log(embeds);
-				//for (let index = 0; index < embeds.length; index++) {
-				//	msg.channel.send(embeds[index]);
-				//}
+				msgDest.send(sheetMessage);
 			} else {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
 			}
@@ -138,11 +140,9 @@ client.on('message', async msg => {
 			if (characters[userId] != undefined)
 			{
 				let sheet = await keeper.getSheet(character.characterName);
-				console.log("Sheet:");
-				console.log(sheet);
 				let sheetMessage = `Statblock for ${sheet.characterName}:\r`;
 				sheetMessage += sheet.getFormattedStatBlock();
-				msg.reply(sheetMessage);
+				msgDest.send(sheetMessage);
 			} else {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
 			}
@@ -166,26 +166,26 @@ client.on('message', async msg => {
 		case 'asp':
 		case 'aspirations':
 			if (characters[userId] != undefined) {
-				let sheet = keeper.getSheet(character.characterName);
+				let sheet = await keeper.getSheet(character.characterName);
 				let aspirationsText = formatAspirations(sheet);
 				let replyText = `Aspirations for ${sheet.characterName}:\r`;
 				replyText += "```fix\r";
 				replyText += `${aspirationsText}`;
 				replyText +="```\r";
-				msg.reply(replyText);
+				msgDest.send(replyText);
 			} else {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
 			}
 			break;
 		case 'conditions':
 			if (characters[userId] != undefined) {
-				let sheet = keeper.getSheet(character.characterName);
+				let sheet = await keeper.getSheet(character.characterName);
 				let conditionsText = formatConditions(sheet);
 				let replyText = `Conditions for ${sheet.characterName}:\r`;
 				replyText += "```fix\r";
 				replyText += `${conditionsText}`;
 				replyText +="```\r";
-				msg.reply(replyText);
+				msgDest.send(replyText);
 			} else {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
 			}
@@ -228,6 +228,8 @@ client.on('message', async msg => {
 			help += "/aspirations\t\tSee your aspirations\r";
 			help += "/asp\t\tSee your aspirations\r";
 			help += "/conditions\t\tSee your conditions\r";
+			help += "/conditions\t\tSee your conditions\r";
+			help += "/dm <aspirations/conditions/sheet>\tSend you the information via DM\r";
 			help += "/roll <X> \t\t Roll <X> dice\r";
 			help += "/sheet\t\tSee your character sheet\r";
 			help += "/stats\t\tSee brief character stats\r";
@@ -250,6 +252,7 @@ client.login(config.token);
 function formatAspirations(sheet) {
 	let index = 0;
 	let formattedAspirations = "";
+	console.log(sheet);
 	while (index < sheet.aspirations.length) {
 		formattedAspirations += sheet.aspirations[index];
 		formattedAspirations += "\r";

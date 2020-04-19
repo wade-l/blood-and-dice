@@ -5,11 +5,11 @@ const gconn = require("./googleconnection.js");
 const Discord = require('discord.js');
 const roller = require("./roller.js");
 
-const attributes = [['intelligence','wits','resolve'],['strength','dexterity','stamina'], ['presence','manipulation','composure']]
-const skills = [
-		['academics','computer','crafts','investigation','medicine','occult','politics','science'],
-		['athletics','brawl','drive','firearms','larceny','stealth','survival','weaponry'],
-		['animal_ken','empathy','expression','intimidation','persuasion','socialize','streetwise','subterfuge']];
+const attributes = [['intelligence','wits','resolve'],['strength','dexterity','stamina'], ['presence','manipulation','composure']];
+const mental_skills = ['academics','computer','crafts','investigation','medicine','occult','politics','science'];
+const physical_skills = ['athletics','brawl','drive','firearms','larceny','stealth','survival','weaponry'];
+const social_skills = ['animal_ken','empathy','expression','intimidation','persuasion','socialize','streetwise','subterfuge'];
+const skills = [ mental_skills, physical_skills, social_skills];
 
 function VampireKeeper(sheetId, credentials) {
 	return {
@@ -43,11 +43,9 @@ function VampireKeeper(sheetId, credentials) {
 			const dividersRegex = /[+\-\#]/;
 			let sheet = await this.getSheet(characterId);
 			let rollText = "";
-			//let roll = roller.rollPool(rollString);
 
 			let nextIndex = rollString.search(dividersRegex);
 			let nextDivider = rollString.charAt(nextIndex);
-			console.log(`Rollstring is ${rollString}, nextIndex is ${nextIndex}, nextDivider is ${nextDivider}`);
 			let lastDivider = '';
 			let totalDice = 0;
 			let more = true;
@@ -59,7 +57,6 @@ function VampireKeeper(sheetId, credentials) {
 				}
 
 				let term = rollString.substring(0,nextIndex).trim();
-				console.log(`Nextindex: ${nextIndex}, NextDivider: ${nextDivider}, LastDivider: ${lastDivider}, RollString: *${rollString}*, term: *${term}*`);
 				nextDivider = rollString.charAt(nextIndex);
 
 				rollString = rollString.substring(nextIndex+1, rollString.length);
@@ -70,8 +67,14 @@ function VampireKeeper(sheetId, credentials) {
 				if (isNaN(term)) {
 					let stat = sheet.getStat(term);
 					if (lastDivider != '') rollText += " " + lastDivider + " ";
-					rollText += `${stat.name} (${stat.value})`;
-					dice = stat.value;
+					if (stat.value > 0 ) {
+						rollText += `${stat.name} (${stat.value})`;
+						dice = parseInt(stat.value);
+					} else {
+						let unskilledPenalty = getUnskilledPenalty(stat.name);
+						rollText += `${stat.name} (Unskilled ${unskilledPenalty})`;
+						dice = unskilledPenalty;
+					}
 				} else {
 					if (lastDivider != '') rollText += " " + lastDivider + " ";
 					rollText += `${term}`;
@@ -94,8 +97,18 @@ function VampireKeeper(sheetId, credentials) {
 
 
 			let roll = roller.rollPool(totalDice);
-			return `${rollText}, which came up ${roll.text} for **${roll.successes}** successes.`;
-		}
+			rollText += `, which came up ${roll.text} `;
+			if (roll.successes >= 5) {
+				rollText += `for **${roll.successes}** successes - **Exceptional Success**.`;
+			} else if (roll.successes >= 1) {
+				rollText += `for **${roll.successes}** successes.`;
+			} else if (roll.successes == 0) {
+				rollText += `- **Failure**.`;
+			} else {
+				rollText += ` - **Dramatic Failure**.`;
+			}
+			return rollText;
+		}	
 	}	
 };
 
@@ -344,3 +357,11 @@ function formatStat(stat, value) {
 	formattedString += "\t";
 	return formattedString;
 }
+
+function getUnskilledPenalty(skill) {
+	skill = skill.toLowerCase();
+	if (mental_skills.includes(skill)) return -3;
+	if (physical_skills.includes(skill)) return -1;
+	if (social_skills.includes(skill)) return -1;
+	return 0;
+}	
