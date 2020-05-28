@@ -233,9 +233,9 @@ client.on('message', async msg => {
 			help += "/roll <X> \t\t Roll <X> dice\r";
 			help += "/sheet\t\tSee your character sheet\r";
 			help += "/stats\t\tSee brief character stats\r";
-			help += "/vitae/willpower/experience/beats <X>\t\t Sets that stat to <X>\r";
-			help += "/vitae/willpower/experience/beats +<X>\t\t Adds <X> to the stat.\r";
-			help += "/vitae/willpower/experience/beats -<X>\t\t Subtracts <X> from the stat.\r";
+			help += "/vitae/willpower/experiences/beats <X>\t\t Sets that stat to <X>\r";
+			help += "/vitae/willpower/experiences/beats +<X>\t\t Adds <X> to the stat.\r";
+			help += "/vitae/willpower/experiences/beats -<X>\t\t Subtracts <X> from the stat.\r";
 			help += "```";
 			msg.reply(help);
 	}
