@@ -329,11 +329,11 @@ function parseSheet(data) {
 	let mIndex = 20;
 	while (moreMerits) {
 		meritName = data[mIndex][3];
-		meritName = meritName.toString().toLowerCase();
 		meritRank = data[mIndex][4];
 		if ((typeof meritName === "undefined") || meritName.length < 1) {
 			moreMerits = false;
 		} else {
+			meritName = meritName.toString().toLowerCase();
 			sheet.merits.push({
 				name: meritName,
 				value: meritRank
