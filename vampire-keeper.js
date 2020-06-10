@@ -39,7 +39,7 @@ function VampireKeeper(sheetId, credentials) {
 				await setSheetValue(value,cellId,id,sheetId,credentials);
 			}
 		},
-		roll: async function (rollString, characterId) {
+		roll: async function (rollString, characterId, again = 10) {
 			const dividersRegex = /[+\-\#]/;
 			let sheet = await this.getSheet(characterId);
 			let rollText = "";
@@ -96,12 +96,12 @@ function VampireKeeper(sheetId, credentials) {
 			}
 
 
-			let roll = roller.rollPool(totalDice);
-			rollText += `, which came up ${roll.text} `;
+			let roll = roller.rollPool(totalDice, again);
+			rollText += `: ${roll.text} `;
 			if (roll.successes >= 5) {
-				rollText += `for **${roll.successes}** successes - **Exceptional Success**.`;
+				rollText += `- **${roll.successes}** successes - **Exceptional Success**.`;
 			} else if (roll.successes >= 1) {
-				rollText += `for **${roll.successes}** successes.`;
+				rollText += `- **${roll.successes}** successes.`;
 			} else if (roll.successes == 0) {
 				rollText += `- **Failure**.`;
 			} else {

@@ -82,6 +82,34 @@ client.on('message', async msg => {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
 			}
 			break;
+		case 'roll8':
+			if (characters[userId] != undefined)
+			{
+				try {
+					let rollText = await keeper.roll(args.join(" ").toLowerCase(),character.characterName, 8);
+					msgDest.send(`${msg.member} rolled (with 8-again) ${rollText}`);
+				} catch (err) {
+					msg.reply(`Sorry, your roll encountered a problem (${err})`);
+				}
+
+			} else {
+				msg.reply("sorry, you don't appear to have a character assigned to you.");
+			}
+			break;
+		case 'roll9':
+			if (characters[userId] != undefined)
+			{
+				try {
+					let rollText = await keeper.roll(args.join(" ").toLowerCase(),character.characterName, 9);
+					msgDest.send(`${msg.member} rolled (with 9-again) ${rollText}`);
+				} catch (err) {
+					msg.reply(`Sorry, your roll encountered a problem (${err})`);
+				}
+
+			} else {
+				msg.reply("sorry, you don't appear to have a character assigned to you.");
+			}
+			break;
 		case 'history':
 			msg.channel.send(rolls);
 			break;
