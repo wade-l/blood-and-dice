@@ -233,8 +233,18 @@ client.on('message', async msg => {
 			} if (adjustment.charAt(0) == '+') {
 				adjustment = adjustment.slice(1);
 				sheet[command] += parseInt(adjustment);
-				keeper.setStat(character.characterName,command,sheet[command]);
-				msg.reply(`you added ${adjustment} to your ${command} (new amount: ${sheet[command]}).\r`);
+
+				if ((command == 'beats') && (sheet[command] >= 5)) {
+					let beats = sheet['beats'] - 5;
+					let experiences = sheet['experiences'] + 1;
+					keeper.setStat(character.characterName,'beats',beats);
+					keeper.setStat(character.characterName,'experiences',experiences);
+					msg.reply(`you added ${adjustment} to your beats, and gained experience (new beats: ${beats}, experiences: ${experiences}).\r`);
+
+				} else {
+					keeper.setStat(character.characterName,command,sheet[command]);
+					msg.reply(`you added ${adjustment} to your ${command} (new amount: ${sheet[command]}).\r`);
+				}
 			} else if (adjustment.charAt(0) == '-') {
 				adjustment = adjustment.slice(1);
 				sheet[command] -= parseInt(adjustment);
