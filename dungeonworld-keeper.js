@@ -3,11 +3,11 @@
 const {google} = require('googleapis');
 const gconn = require("./googleconnection.js");
 const Discord = require('discord.js');
-const roller = require("./monsterhearts-roller.js");
+const roller = require("./dungeonworld-roller.js");
 
-const stats = ['hot','cold','dark','volatile'];
+const stats = ['str','dex','con','wis','int','cha'];
 
-function MonsterHeartsKeeper(sheetId, credentials) {
+function DungeonWorldKeeper(sheetId, credentials) {
 	return {
 		'sheetId' : sheetId,
 		'credentials': credentials,
@@ -16,35 +16,17 @@ function MonsterHeartsKeeper(sheetId, credentials) {
 			let firstcell = String.fromCharCode(65 + offset) + "1";
 			let lastcell = String.fromCharCode(65 + offset + 4) + "43";
 			console.log(`offset: ${offset}, ${firstcell}:${lastcell}`);
-			let characterData = await getSheetData(`${firstcell}:${lastcell}`, 'Characters',sheetId, credentials);
+			console.log("Getting character data:");
+			let characterData = await getSheetData(`${firstcell}:${lastcell}`, 'Party',sheetId, credentials);
 			console.log(characterData);
 			return parseSheet(characterData);
 		},
 		setStat: async function(id, stat, value) {
-			let cellId;
-			switch (stat) {
-				case 'vitae':
-					cellId = 'H24';
-					break;
-				case 'willpower':
-					cellId = 'H22';
-					break;
-				case 'beats':
-					cellId = 'H31';
-					break;
-				case 'experiences':
-					cellId = 'H30';
-					break;
-			}
-			if (typeof cellId != "undefined") {
-				await setSheetValue(value,cellId,id,sheetId,credentials);
-			}
 		},
 		roll: async function (rollString, characterId) {
 			const dividersRegex = /[+\-\#]/;
 			let sheet = await this.getSheet(characterId);
 			let rollText = "";
-			//let roll = roller.rollPool(rollString);
 
 			let nextIndex = rollString.search(dividersRegex);
 			let nextDivider = rollString.charAt(nextIndex);
@@ -103,17 +85,19 @@ function MonsterHeartsKeeper(sheetId, credentials) {
 	}	
 };
 
-function MonsterHeartsSheet (name) {
+function DungeonWorldSheet (name) {
 	return {
 		'characterName' : name,
 		getFormattedSheet: function () {
 			const embeds = [];			
 			let fSheet = "";
-			fSheet += `**${this.characterName}** (${this.characterPronouns}) - Played by ${this.playerName}\r`;
-			fSheet += `**Hot**: \t\t\t${this.hot}\r`;
-			fSheet += `**Cold**: \t\t\t${this.cold}\r`;
-			fSheet += `**Volatile**:\t\t${this.volatile}\r`;
-			fSheet += `**Dark**:\t\t\t${this.dark}\r`;
+			fSheet += `**${this.characterName}**- Played by ${this.playerName}\r`;
+			fSheet += `**Str**: \t\t\t${this.str}\r`;
+			fSheet += `**Dex**: \t\t\t${this.dex}\r`;
+			fSheet += `**Con**:\t\t${this.con}\r`;
+			fSheet += `**Int**:\t\t\t${this.int}\r`;
+			fSheet += `**Wis**:\t\t\t${this.wis}\r`;
+			fSheet += `**Cha**:\t\t\t${this.cha}\r`;
 			return fSheet;
 		},
 		getFormattedStatBlock: function () {
@@ -143,8 +127,8 @@ function MonsterHeartsSheet (name) {
 	};
 }
 
-exports.MonsterHeartsKeeper = MonsterHeartsKeeper;
-exports.MonsterHeartsSheet = MonsterHeartsSheet;
+exports.DungeonWorldKeeper = DungeonWorldKeeper;
+exports.DungeonWorldSheet = DungeonWorldSheet;
 
 async function getSheetData(cells, sheetName, sheetId, credentials) {
 	let auth = await gconn.getAuth(credentials);
@@ -178,17 +162,14 @@ async function setSheetValue(value,cell,sheetName,sheetId,credentials) {
 }
 
 function parseSheet(data) {
-	let sheet = MonsterHeartsSheet(data[0][0]);
-	sheet.characterPronouns = data[1][0];
-	sheet.playerName = data[2][0];
-	sheet.skin = data[4][0];
-	sheet.look = data[5][0];
-	sheet.eyes = data[6][0];
-	sheet.origin = data[7][0];
-	sheet.hot = data[10][2];
-	sheet.cold = data[11][2];
-	sheet.volatile = data[12][2];
-	sheet.dark = data[13][2];
+	let sheet = DungeonWorldSheet(data[1][1]);
+	sheet.playerName = data[0][1];
+	sheet.str = data[8][3];
+	sheet.dex = data[9][3];
+	sheet.con = data[10][3];
+	sheet.int = data[11][3];
+	sheet.wis = data[12][3];
+	sheet.cha = data[13][3];
 
 	console.log("parseSheet:");
 	console.log(sheet);

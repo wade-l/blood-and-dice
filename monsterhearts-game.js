@@ -1,6 +1,6 @@
 "use strict";
 const config = require ("./vampire-config.json");
-const roller = require("./monsterhearts_roller.js");
+const roller = require("./monsterhearts-roller.js");
 const mhk = require("./monsterhearts-keeper.js");
 
 function MonsterheartsGame() {

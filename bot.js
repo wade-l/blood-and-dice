@@ -6,6 +6,7 @@ const config = require ("./config.json");
 const storage = require('node-persist');
 const vg = require("./vampire-game.js")
 const mhg = require("./monsterhearts-game.js");
+const dwg = require("./dungeonworld-game.js");
 
 storage.init();
 
@@ -18,7 +19,7 @@ client.on('ready', () => {
 
 client.on('message', async msg => {
 	console.log(`Received message: ${msg.content}`);
-	console.log(msg);
+
 	// Ignore bots
 	if (msg.author.bot) return;
 
@@ -28,6 +29,9 @@ client.on('message', async msg => {
 			break;
 		case '690990507085791242':
 			game = mhg.MonsterheartsGame();
+			break;
+		case '691864914532368404':
+			game = dwg.DungeonWorldGame();
 			break;
 	}
 
