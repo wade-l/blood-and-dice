@@ -109,3 +109,7 @@ credentials.json
 token.json
 vampire-config.json
 
+
+# node-persist
+.node-persist/
+.node-persist - Copy/
