@@ -1,6 +1,6 @@
 "use strict";
 const config = require ("./vampire-config.json");
-const roller = require("./roller.js");
+const roller = require("./vampire_roller.js");
 const vk = require("./vampire-keeper.js");
 
 function VampireGame() {

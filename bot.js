@@ -2,10 +2,10 @@
 "use strict";
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const config = require ("./vampire-config.json");
-const roller = require("./roller.js");
+const config = require ("./config.json");
 const storage = require('node-persist');
 const vg = require("./vampire-game.js")
+const mhg = require("./monsterhearts-game.js");
 
 storage.init();
 
@@ -18,8 +18,18 @@ client.on('ready', () => {
 
 client.on('message', async msg => {
 	console.log(`Received message: ${msg.content}`);
+	console.log(msg);
 	// Ignore bots
 	if (msg.author.bot) return;
+
+	switch (msg.channel.guild.id) {
+		case '691158656951123980':
+			game = vg.VampireGame();
+			break;
+		case '690990507085791242':
+			game = mhg.MonsterheartsGame();
+			break;
+	}
 
 	// Ignore anything that doesn't start with our prefix
 	if (msg.content.indexOf(config.prefix) !== 0) return;
@@ -125,29 +135,4 @@ client.on('message', async msg => {
 client.login(config.token);
 
 
-function formatAspirations(sheet) {
-	let index = 0;
-	let formattedAspirations = "";
-	console.log(sheet);
-	while (index < sheet.aspirations.length) {
-		formattedAspirations += sheet.aspirations[index];
-		formattedAspirations += "\r";
-		index++;
-	}
 
-	return formattedAspirations;
-}
-
-function formatConditions(sheet) {
-	let index = 0;
-	let formattedConditions = "";
-	while (index < sheet.conditions.length) {
-		formattedConditions += `** ${sheet.conditions[index].name} **\r`;
-		formattedConditions += sheet.conditions[index].text;
-		formattedConditions += "\r";
-
-		index++;
-	}
-
-	return formattedConditions;
-}
