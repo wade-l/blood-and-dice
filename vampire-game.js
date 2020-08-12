@@ -168,3 +168,33 @@ function VampireGame() {
 }
 
 exports.VampireGame = VampireGame;
+
+
+
+// "Helper" functions
+function formatAspirations(sheet) {
+	let index = 0;
+	let formattedAspirations = "";
+	console.log(sheet);
+	while (index < sheet.aspirations.length) {
+		formattedAspirations += sheet.aspirations[index];
+		formattedAspirations += "\r";
+		index++;
+	}
+
+	return formattedAspirations;
+}
+
+function formatConditions(sheet) {
+	let index = 0;
+	let formattedConditions = "";
+	while (index < sheet.conditions.length) {
+		formattedConditions += `** ${sheet.conditions[index].name} **\r`;
+		formattedConditions += sheet.conditions[index].text;
+		formattedConditions += "\r";
+
+		index++;
+	}
+
+	return formattedConditions;
+}
