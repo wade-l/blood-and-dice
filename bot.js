@@ -1,6 +1,7 @@
 // Bot for Blood and Dice
 "use strict";
 const Discord = require('discord.js');
+const mongoose = require("mongoose");
 const client = new Discord.Client();
 const config = require ("./config.json");
 const storage = require('node-persist');
