@@ -1,15 +1,12 @@
 // Bot for Blood and Dice
 "use strict";
 const Discord = require('discord.js');
-const mongoose = require("mongoose");
+const db = require("./mongoose-connection.js");
 const client = new Discord.Client();
 const config = require ("./config.json");
-const storage = require('node-persist');
 const vg = require("./vampire-game.js")
 const mhg = require("./monsterhearts-game.js");
 const dwg = require("./dungeonworld-game.js");
-
-storage.init();
 
 let game = vg.VampireGame();
 
@@ -23,6 +20,11 @@ client.on('message', async msg => {
 
 	// Ignore bots
 	if (msg.author.bot) return;
+
+	let gameState = await db.getGame(config.mongoconnectionstring, msg.channel.guild.id, msg.channel.id);
+
+	console.log("Selected game is:");
+	console.log(gameState);
 
 	switch (msg.channel.guild.id) {
 		case '691158656951123980':
@@ -38,28 +40,11 @@ client.on('message', async msg => {
 
 	// Ignore anything that doesn't start with our prefix
 	if (msg.content.indexOf(config.prefix) !== 0) return;
-	let rolls = [];
-	let characters = {};
-	let users ={};
-
-	try {
-		rolls = await storage.getItem('rolls');
-		if (typeof rolls === "undefined") rolls =[];
-		characters = await storage.getItem('characters');
-		if (typeof characters === "undefined") characters = {};
-		users = await storage.getItem('users');
-		if (typeof users === "undefined") users = {};
-	} catch (err) {
-		console.log("Error reading storage");
-		console.log(err)
-	}
-	console.log(characters);
 
 	let userId = msg.member.id;
-	let character = {};
-	if (! (typeof characters === "undefined") ) {
-		character = characters[userId];
-	}
+	let character = gameState.characters.get(userId);
+	console.log(character);
+
 
 	// Grab the channel we'll send messages to
 	let msgDest = msg.channel;
@@ -85,14 +70,8 @@ client.on('message', async msg => {
 				console.log(msg.mentions.users.first());
 				if (user != undefined) {
 					let character = args.shift().toLowerCase();
-					characters[user.id] = {
-						"characterName" : character,
-						"vitae"	: 0,
-						"health" : 0,
-						"willpower" : 0,
-						"beats" : 0,
-						"experiences" : 0
-					};
+					gameState.characters.set(user.id,{source: character, name: character});
+					gameState.save();
 					msg.reply(`Assigned ${character} to ${user}`);
 				} else {
 					msg.reply("We can't find the user you were trying to assign.");
@@ -103,13 +82,12 @@ client.on('message', async msg => {
 			break;
 		case 'roster':
 			console.log("Attempting to list all characters");
-			let rosterString = "";
-			for (var key in characters) {
-				user = await client.users.fetch(key);
-				rosterString += `${user} is playing ${characters[key].characterName}.\r`;
-				console.log(user);
-				console.log(key);
-				console.log(characters[key]);
+			let rosterString = "here is which character is assigned to which Discord id:\r";
+			const iterator = gameState.characters.keys();
+
+			for (const id of gameState.characters.keys()) {
+				let character = gameState.characters.get(id);
+				rosterString += `${character.name} (${character.source}) is assigned to userId ${id}\r`;
 			}
 
 			msg.reply(rosterString);
@@ -119,7 +97,7 @@ client.on('message', async msg => {
 		default:
 			if (game.hasCommand(command)) {
 				let context = {
-					"character": characters[userId],
+					"character": character,
 					"msgDest": msgDest,
 					"msg": msg,
 					"args": args
@@ -130,10 +108,6 @@ client.on('message', async msg => {
 			}
 
 	}
-
-	storage.set('rolls',rolls);
-	storage.set('characters', characters);
-	storage.set('users', users);
 
 });
 

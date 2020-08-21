@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 
 var GameSchema = new mongoose.Schema({
 	name: String,
-	system: String
+	system: String,
+	characters: Map
 });
 
 var GuildSchema = new mongoose.Schema({

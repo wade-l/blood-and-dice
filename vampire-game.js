@@ -19,6 +19,7 @@ function VampireGame() {
 			}
 
 			let character = context.character;
+			let id = character.source;
 			let args = context.args;
 			let msgDest = context.msgDest;
 			let msg = context.msg;
@@ -26,7 +27,7 @@ function VampireGame() {
 			switch (command) {
 				case 'roll': {
 					try {
-						let rollText = await keeper.roll(args.join(" ").toLowerCase(),character.characterName);
+						let rollText = await keeper.roll(args.join(" ").toLowerCase(),id);
 						msgDest.send(`${msg.member} rolled ${rollText}`);
 					} catch (err) {
 						msg.reply(`Sorry, your roll encountered a problem (${err})`);
@@ -35,7 +36,7 @@ function VampireGame() {
 				}
 				case 'roll8': {
 					try {
-						let rollText = await keeper.roll(args.join(" ").toLowerCase(),character.characterName, 8);
+						let rollText = await keeper.roll(args.join(" ").toLowerCase(),id, 8);
 						msgDest.send(`${msg.member} rolled (with 8-again) ${rollText}`);
 					} catch (err) {
 						msg.reply(`Sorry, your roll encountered a problem (${err})`);
@@ -44,7 +45,7 @@ function VampireGame() {
 				}
 				case 'roll9': {
 					try {
-						let rollText = await keeper.roll(args.join(" ").toLowerCase(),character.characterName, 9);
+						let rollText = await keeper.roll(args.join(" ").toLowerCase(),id, 9);
 						msgDest.send(`${msg.member} rolled (with 9-again) ${rollText}`);
 					} catch (err) {
 						msg.reply(`Sorry, your roll encountered a problem (${err})`);
@@ -52,7 +53,7 @@ function VampireGame() {
 					break;
 				}
 				case 'sheet': {
-					let sheet = await keeper.getSheet(character.characterName);
+					let sheet = await keeper.getSheet(id);
 					console.log("Sheet:");
 					console.log(sheet);
 					let sheetMessage = `Character Sheet for ${sheet.characterName} pulled from GoogleDocs:\r`;
@@ -61,14 +62,14 @@ function VampireGame() {
 					break;
 				}
 				case 'stats': {
-					let sheet = await keeper.getSheet(character.characterName);
+					let sheet = await keeper.getSheet(id);
 					let sheetMessage = `Statblock for ${sheet.characterName}:\r`;
 					sheetMessage += sheet.getFormattedStatBlock();
 					msgDest.send(sheetMessage);
 					break;
 				}
 				case 'stat': {
-					let sheet = await keeper.getSheet(character.characterName);
+					let sheet = await keeper.getSheet(id);
 					try {
 						let stat = sheet.getStat(args.shift().toLowerCase());
 						msg.reply(`Your ${stat.name} is ${stat.value}.`);
@@ -81,7 +82,7 @@ function VampireGame() {
 				}
 				case 'asp':
 				case 'aspirations': {
-					let sheet = await keeper.getSheet(character.characterName);
+					let sheet = await keeper.getSheet(id);
 					let aspirationsText = formatAspirations(sheet);
 					let replyText = `Aspirations for ${sheet.characterName}:\r`;
 					replyText += "```fix\r";
@@ -91,7 +92,7 @@ function VampireGame() {
 					break;
 				}
 				case 'conditions': {
-					let sheet = await keeper.getSheet(character.characterName);
+					let sheet = await keeper.getSheet(id);
 					let conditionsText = formatConditions(sheet);
 					let replyText = `Conditions for ${sheet.characterName}:\r`;
 					replyText += "```fix\r";
@@ -107,7 +108,7 @@ function VampireGame() {
 				case 'experiences': {
 					console.log(`Trying to adjust ${command}`);
 
-					let sheet = await keeper.getSheet(character.characterName);
+					let sheet = await keeper.getSheet(id);
 
 					let adjustment = args.shift().toLowerCase();
 					if (adjustment.charAt(0) == '+') {
@@ -117,22 +118,22 @@ function VampireGame() {
 						if ((command == 'beats') && (sheet[command] >= 5)) {
 							let beats = sheet['beats'] - 5;
 							let experiences = sheet['experiences'] + 1;
-							keeper.setStat(character.characterName,'beats',beats);
-							keeper.setStat(character.characterName,'experiences',experiences);
+							keeper.setStat(id,'beats',beats);
+							keeper.setStat(id,'experiences',experiences);
 							msg.reply(`you added ${adjustment} to your beats, and gained experience (new beats: ${beats}, experiences: ${experiences}).\r`);
 
 						} else {
-							keeper.setStat(character.characterName,command,sheet[command]);
+							keeper.setStat(id,command,sheet[command]);
 							msg.reply(`you added ${adjustment} to your ${command} (new amount: ${sheet[command]}).\r`);
 						}
 					} else if (adjustment.charAt(0) == '-') {
 						adjustment = adjustment.slice(1);
 						sheet[command] -= parseInt(adjustment);
-						keeper.setStat(character.characterName,command,sheet[command]);
+						keeper.setStat(id,command,sheet[command]);
 						msg.reply(`you removed ${adjustment} from your ${command} (new amount: ${sheet[command]}).\r`);
 					} else if ( Number.isInteger(parseInt(adjustment))) {
 						sheet[command] = parseInt(adjustment);
-						keeper.setStat(character.characterName,command,sheet[command]);
+						keeper.setStat(id,command,sheet[command]);
 						msg.reply(`you set your ${command} to ${adjustment}\r`);
 					} else {
 						msg.reply("I don't know what you were trying to do.");
