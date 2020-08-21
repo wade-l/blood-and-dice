@@ -13,20 +13,23 @@ function MonsterheartsGame() {
 		},
 		"doCommand": async function(command, context) {
 			
+			let args = context.args;
+			let msgDest = context.msgDest;
+			let msg = context.msg;
+			let keeper = this.keeper;
+
 			if (context.character === undefined) {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
 				return;
 			}
 
 			let character = context.character;
-			let args = context.args;
-			let msgDest = context.msgDest;
-			let msg = context.msg;
-			let keeper = this.keeper;
+			let id = character.source;
+
 			switch (command) {
 				case 'roll': {
 					try {
-						let rollText = await keeper.roll(args.join(" ").toLowerCase(),character.characterName);
+						let rollText = await keeper.roll(args.join(" ").toLowerCase(),id);
 						msgDest.send(`${msg.member} rolled ${rollText}`);
 					} catch (err) {
 						msg.reply(`Sorry, your roll encountered a problem (${err})`);
@@ -34,7 +37,7 @@ function MonsterheartsGame() {
 					break;
 				}
 				case 'sheet': {
-					let sheet = await keeper.getSheet(character.characterName);
+					let sheet = await keeper.getSheet(id);
 					console.log("Sheet:");
 					console.log(sheet);
 					let sheetMessage = `Character Sheet for ${sheet.characterName} pulled from GoogleDocs:\r`;
@@ -43,14 +46,14 @@ function MonsterheartsGame() {
 					break;
 				}
 				case 'stats': {
-					let sheet = await keeper.getSheet(character.characterName);
+					let sheet = await keeper.getSheet(id);
 					let sheetMessage = `Statblock for ${sheet.characterName}:\r`;
 					sheetMessage += sheet.getFormattedStatBlock();
 					msgDest.send(sheetMessage);
 					break;
 				}
 				case 'stat': {
-					let sheet = await keeper.getSheet(character.characterName);
+					let sheet = await keeper.getSheet(id);
 					try {
 						let stat = sheet.getStat(args.shift().toLowerCase());
 						msg.reply(`Your ${stat.name} is ${stat.value}.`);
@@ -63,7 +66,7 @@ function MonsterheartsGame() {
 				}
 				case 'asp':
 				case 'aspirations': {
-					let sheet = await keeper.getSheet(character.characterName);
+					let sheet = await keeper.getSheet(id);
 					let aspirationsText = formatAspirations(sheet);
 					let replyText = `Aspirations for ${sheet.characterName}:\r`;
 					replyText += "```fix\r";
@@ -73,7 +76,7 @@ function MonsterheartsGame() {
 					break;
 				}
 				case 'conditions': {
-					let sheet = await keeper.getSheet(character.characterName);
+					let sheet = await keeper.getSheet(id);
 					let conditionsText = formatConditions(sheet);
 					let replyText = `Conditions for ${sheet.characterName}:\r`;
 					replyText += "```fix\r";

@@ -3,11 +3,15 @@
 const Discord = require('discord.js');
 const db = require("./mongoose-connection.js");
 const client = new Discord.Client();
-const config = require ("./config.json");
 const vg = require("./vampire-game.js")
 const mhg = require("./monsterhearts-game.js");
 const dwg = require("./dungeonworld-game.js");
 
+const DB_URI = process.env.BD_DBURI;
+const PREFIX = process.env.BD_PREFIX;
+const TOKEN = process.env.BD_TOKEN;
+
+console.log (process.env);
 let game = vg.VampireGame();
 
 client.on('ready', () => {
@@ -21,22 +25,28 @@ client.on('message', async msg => {
 	// Ignore bots
 	if (msg.author.bot) return;
 
-	let gameState = await db.getGame(config.mongoconnectionstring, msg.channel.guild.id, msg.channel.id);
+	console.log(`Looking up ${msg.channel.guild.id} guild in ${msg.channel.id} channel...`);
+	let gameState = await db.getGame(DB_URI, msg.channel.guild.id, msg.channel.id);
+
+	console.log(gameState);
 
 	switch (msg.channel.guild.id) {
 		case '691158656951123980':
+			console.log("Playing Vampire");
 			game = vg.VampireGame();
 			break;
 		case '690990507085791242':
+			console.log("Playing Monsterhearts");
 			game = mhg.MonsterheartsGame();
 			break;
 		case '691864914532368404':
+			console.log("Playing Dungeon World");
 			game = dwg.DungeonWorldGame();
 			break;
 	}
 
 	// Ignore anything that doesn't start with our prefix
-	if (msg.content.indexOf(config.prefix) !== 0) return;
+	if (msg.content.indexOf(PREFIX) !== 0) return;
 
 	let userId = msg.member.id;
 	let character = gameState.characters.get(userId);
@@ -45,7 +55,7 @@ client.on('message', async msg => {
 	let msgDest = msg.channel;
 
 	// Seperate off the command
-	const args = msg.content.slice(config.prefix.length).trim().split(/ +/g);
+	const args = msg.content.slice(PREFIX.length).trim().split(/ +/g);
 	let command = args.shift().toLowerCase();
 	if (command == "dm") {
 		msgDest = msg.author;
@@ -106,7 +116,7 @@ client.on('message', async msg => {
 
 });
 
-client.login(config.token);
+client.login(TOKEN);
 
 
 
