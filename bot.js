@@ -23,9 +23,6 @@ client.on('message', async msg => {
 
 	let gameState = await db.getGame(config.mongoconnectionstring, msg.channel.guild.id, msg.channel.id);
 
-	console.log("Selected game is:");
-	console.log(gameState);
-
 	switch (msg.channel.guild.id) {
 		case '691158656951123980':
 			game = vg.VampireGame();
@@ -43,8 +40,6 @@ client.on('message', async msg => {
 
 	let userId = msg.member.id;
 	let character = gameState.characters.get(userId);
-	console.log(character);
-
 
 	// Grab the channel we'll send messages to
 	let msgDest = msg.channel;
