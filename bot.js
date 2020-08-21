@@ -11,9 +11,6 @@ const DB_URI = process.env.BD_DBURI;
 const PREFIX = process.env.BD_PREFIX;
 const TOKEN = process.env.BD_TOKEN;
 
-console.log (process.env);
-let game = vg.VampireGame();
-
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.tag}!`);
 	client.user.setActivity(`Vampire: the Requiem`);
@@ -24,6 +21,8 @@ client.on('message', async msg => {
 
 	// Ignore bots
 	if (msg.author.bot) return;
+
+	let game = null;
 
 	console.log(`Looking up ${msg.channel.guild.id} guild in ${msg.channel.id} channel...`);
 	let gameState = await db.getGame(DB_URI, msg.channel.guild.id, msg.channel.id);

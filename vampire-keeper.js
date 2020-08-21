@@ -3,7 +3,7 @@
 const {google} = require('googleapis');
 const gconn = require("./googleconnection.js");
 const Discord = require('discord.js');
-const roller = require("./vampire-roller.js");
+const roller = require("./roller.js");
 
 const attributes = [['intelligence','wits','resolve'],['strength','dexterity','stamina'], ['presence','manipulation','composure']];
 const mental_skills = ['academics','computer','crafts','investigation','medicine','occult','politics','science'];

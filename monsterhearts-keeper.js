@@ -3,7 +3,7 @@
 const {google} = require('googleapis');
 const gconn = require("./googleconnection.js");
 const Discord = require('discord.js');
-const roller = require("./monsterhearts-roller.js");
+const roller = require("./roller.js");
 
 const stats = ['hot','cold','dark','volatile'];
 
