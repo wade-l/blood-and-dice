@@ -1,12 +1,11 @@
 "use strict";
-const config = require ("./vampire-config.json");
 const roller = require("./dungeonworld-roller.js");
 const dwk = require("./dungeonworld-keeper.js");
 
 function DungeonWorldGame() {
 
 	return {
-		"keeper": dwk.DungeonWorldKeeper('1VOvdNMqAy9RSvLCZ5DazXep9zcy1h0zM8WeBD5wihFY', require("./credentials.json")),
+		"keeper": dwk.DungeonWorldKeeper('1VOvdNMqAy9RSvLCZ5DazXep9zcy1h0zM8WeBD5wihFY', process.env.BD_GOOGLECREDENTIALS),
 		"commands": ['roll','sheet','stats','stat'],
 		"hasCommand": function (command) {
 			return this.commands.includes(command);
