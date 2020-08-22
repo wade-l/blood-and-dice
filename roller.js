@@ -1,3 +1,5 @@
+"use strict";
+
 function rollPool(pool, again = 10)
 {
 	console.log(`Asked to roll *${pool}*`);
@@ -96,7 +98,7 @@ function rollD10() {
 		text  : ""
 	};
 
-	die = Math.floor(Math.random() * 10) + 1;
+	let die = Math.floor(Math.random() * 10) + 1;
 	roll.text = die.toString();
 	if (die >= 8) roll.successes++;
 
@@ -122,7 +124,7 @@ function rollSTDie(threshold = 8, again = 10) {
 		firstDie: 0
 	};
 
-	die = Math.floor(Math.random() * 10) + 1;
+	let die = Math.floor(Math.random() * 10) + 1;
 	roll.firstDie = die;
 	roll.text = d10ToEmoji(die);
 	if (die >= threshold) roll.successes++;

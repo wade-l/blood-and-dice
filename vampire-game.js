@@ -109,7 +109,7 @@ function VampireGame() {
 
 					let sheet = await keeper.getSheet(id);
 
-					let adjustment = args.shift().toLowerCase();
+					let adjustment = args.join('').toLowerCase().replace(/\s+/g, '');
 					if (adjustment.charAt(0) == '+') {
 						adjustment = adjustment.slice(1);
 						sheet[command] += parseInt(adjustment);
@@ -133,7 +133,7 @@ function VampireGame() {
 					} else if ( Number.isInteger(parseInt(adjustment))) {
 						sheet[command] = parseInt(adjustment);
 						keeper.setStat(id,command,sheet[command]);
-						msg.reply(`you set your ${command} to ${adjustment}\r`);
+						msg.reply(`you set your ${command} to ${adjustment}.\r`);
 					} else {
 						msg.reply("I don't know what you were trying to do.");
 					}
