@@ -1,7 +1,8 @@
 const {google} = require('googleapis');
 const fs = require('fs').promises;
 const readline = require('readline');
-const credentials = require("./credentials.json");
+const credentials = process.env.BD_GOOGLECREDENTIALS;
+const ENV_TOKEN = process.env.BD_GOOGLETOKEN;
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
@@ -16,12 +17,21 @@ async function getAuth(credentials) {
       client_id, client_secret, redirect_uris[0]);
 
   // Check if we have previously stored a token.
-  try {
+  /*try {
     const token = await fs.readFile(TOKEN_PATH);
     oAuth2Client.setCredentials(JSON.parse(token));
     return oAuth2Client;
   } catch (err) {
     return getNewToken(oAuth2Client);
+  }*/
+
+  // Token should be in environment
+  const token = JSON.parse(ENV_TOKEN);
+  try {
+    oAuth2Client.setCredentials(token);
+    return oAuth2Client;
+  } catch (err) {
+    console.log(err);
   }
 }
 
