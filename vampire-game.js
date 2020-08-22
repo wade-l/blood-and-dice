@@ -6,7 +6,7 @@ function VampireGame() {
 
 	return {
 		"keeper": vk.VampireKeeper('1OeSRHL38EheCYsdHpxX04cI5ghHqYeIf2u43hERyYI8', process.env.BD_GOOGLECREDENTIALS),
-		"commands": ['roll','roll8','roll9','sheet','stats','stat','asp','aspirations','conditions','vitae','health','willpower','beats','experiences'],
+		"commands": ['roll','r','roll8','r8','roll9','r9','sheet','stats','stat','asp','aspirations','conditions','vitae','health','willpower','beats','experiences'],
 		"hasCommand": function (command) {
 			return this.commands.includes(command);
 		},
