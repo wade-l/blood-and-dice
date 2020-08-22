@@ -180,6 +180,11 @@ function VampireSheet (name) {
 			let matchedStat = [];
 			let allStats = attributes.flat(2).concat(skills.flat(2));
 
+			// A hack specifically for animal ken
+			if (stat == "ken") {
+				stat = "animal_ken";
+			}
+
 			let matchStats = allStats.filter(function (s) {
 				return (s.substring(0,stat.length).localeCompare(stat) == 0);
 			})
