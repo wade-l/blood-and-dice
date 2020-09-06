@@ -6,7 +6,7 @@ function VampireGame() {
 
 	return {
 		"keeper": vk.VampireKeeper('1OeSRHL38EheCYsdHpxX04cI5ghHqYeIf2u43hERyYI8', process.env.BD_GOOGLECREDENTIALS),
-		"commands": ['roll','roll8','roll9','sheet','stats','stat','asp','aspirations','conditions','vitae','health','willpower','beats','experiences'],
+		"commands": ['roll','r','roll8','r8','roll9','r9','sheet','stats','stat','asp','aspirations','conditions','vitae','health','willpower','beats','experiences'],
 		"hasCommand": function (command) {
 			return this.commands.includes(command);
 		},
@@ -24,6 +24,7 @@ function VampireGame() {
 			let msg = context.msg;
 			let keeper = this.keeper;
 			switch (command) {
+				case 'r':
 				case 'roll': {
 					try {
 						let rollText = await keeper.roll(args.join(" ").toLowerCase(),id);
@@ -33,6 +34,7 @@ function VampireGame() {
 					}
 					break;
 				}
+				case 'r8':
 				case 'roll8': {
 					try {
 						let rollText = await keeper.roll(args.join(" ").toLowerCase(),id, 8);
@@ -42,6 +44,7 @@ function VampireGame() {
 					}
 					break;
 				}
+				case 'r9':
 				case 'roll9': {
 					try {
 						let rollText = await keeper.roll(args.join(" ").toLowerCase(),id, 9);
@@ -156,6 +159,7 @@ function VampireGame() {
 			help += "/roll <X> \t\t Roll <X> dice\r";
 			help += "/roll8 <X> \t\t Roll <X> dice with the 8-again quality\r";
 			help += "/roll9 <X> \t\t Roll <X> dice with the 9-again quality\r";
+			help += "/r | /r8 | /r9 \t\t Same as /roll, /roll8, /roll9 but shorter\r"
 			help += "/sheet\t\tSee your character sheet\r";
 			help += "/stats\t\tSee brief character stats\r";
 			help += "/vitae/willpower/experiences/beats <X>\t\t Sets that stat to <X>\r";

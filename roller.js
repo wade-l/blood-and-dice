@@ -44,7 +44,7 @@ function pbtaRoll(bonus) {
 }
 
 function rollDie(sides) {
-		dieRoll = Math.floor(Math.random() * sides) + 1;
+		let dieRoll = Math.floor(Math.random() * sides) + 1;
 		return dieRoll;
 	}
 
