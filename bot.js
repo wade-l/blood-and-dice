@@ -6,6 +6,7 @@ const client = new Discord.Client();
 const vg = require("./vampire-game.js")
 const mhg = require("./monsterhearts-game.js");
 const dwg = require("./dungeonworld-game.js");
+const cg = require("./changeling-game.js");
 
 const DB_URI = process.env.BD_DBURI;
 const PREFIX = process.env.BD_PREFIX;
@@ -41,6 +42,10 @@ client.on('message', async msg => {
 		case '691864914532368404':
 			console.log("Playing Dungeon World");
 			game = dwg.DungeonWorldGame();
+			break;
+		case '747476140012077147':
+			console.log("Playing Changeling");
+			game = cg.ChangelingGame();
 			break;
 	}
 
