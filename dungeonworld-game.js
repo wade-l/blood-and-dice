@@ -12,16 +12,17 @@ function DungeonWorldGame() {
 		},
 		"doCommand": async function(command, context) {
 			
-			if (context.character === undefined) {
-				msg.reply("sorry, you don't appear to have a character assigned to you.");
-				return;
-			}
-
 			let character = context.character;
 			let args = context.args;
 			let msgDest = context.msgDest;
 			let msg = context.msg;
 			let keeper = this.keeper;
+
+			if (context.character === undefined) {
+				msg.reply("sorry, you don't appear to have a character assigned to you.");
+				return;
+			}
+
 			switch (command) {
 				case 'roll': {
 					if (args.length == 0) {
@@ -37,16 +38,9 @@ function DungeonWorldGame() {
 							let roll = roller.rollDie(sides);
 							msg.reply(`rolled ${roll} on a ${sides}-sided die.`);
 						} else {
-							console.log(characters);
-							if (characters[userId] != undefined)
-							{
-								console.log(`Trying to roll '${sides}'`);
-								let rollText = await keeper.roll(rollString,character.characterName);
-								msg.channel.send(`${msg.member} rolled ${rollText}`);
-
-							} else {
-								msg.reply("sorry, you don't appear to have a character assigned to you.");
-							}
+							console.log(`Trying to roll '${sides}'`);
+							let rollText = await keeper.roll(rollString,character.characterName);
+							msg.channel.send(`${msg.member} rolled ${rollText}`);
 						}
 					}
 					break;

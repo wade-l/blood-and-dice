@@ -15,9 +15,11 @@ function DungeonWorldKeeper(sheetId, credentials) {
 			let offset = (parseInt(id) - 1) * 5;
 			let firstcell = String.fromCharCode(65 + offset) + "1";
 			let lastcell = String.fromCharCode(65 + offset + 4) + "43";
+			firstcell = firstcell.trim();
+			lastcell = lastcell.trim();
 			console.log(`offset: ${offset}, ${firstcell}:${lastcell}`);
 			console.log("Getting character data:");
-			let characterData = await getSheetData(`${firstcell}:${lastcell}`, 'Party',sheetId, credentials);
+			let characterData = await getSheetData(`1:43`, 'Party',sheetId, credentials);
 			console.log(characterData);
 			return parseSheet(characterData);
 		},
@@ -134,11 +136,17 @@ async function getSheetData(cells, sheetName, sheetId, credentials) {
 	let auth = await gconn.getAuth(credentials);
 	const sheets = google.sheets({version: 'v4', auth});
   	let characters =[];
-  	let res = await sheets.spreadsheets.values.get({
-    	spreadsheetId: sheetId,
-    	range: `${sheetName}!${cells}`,
- 	});
- 	let rows = res.data.values;
+  	try {
+  		console.log(`Sheetname '${sheetName}' id '${sheetId} cells '${cells}'`);
+	  	let res = await sheets.spreadsheets.values.get({
+	    	spreadsheetId: sheetId,
+	    	range: `${sheetName}!${cells}`,
+	 	});
+	 	let rows = res.data.values;
+	} catch (err) {
+ 		console.log(err);
+ 		return null;
+ 	}
 	return rows;
 }
 
