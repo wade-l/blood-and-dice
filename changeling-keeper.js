@@ -309,13 +309,16 @@ function parseSheet(data) {
 	}
 
 	sheet.disciplines = [];
+
 	let disciplineName = undefined;
 	let disciplineRank = undefined;
 	let moreDisciplines = true;
 	let dIndex = 20;
 		while (moreDisciplines) {
 		disciplineName = data[dIndex][0];
-		disciplineName = disciplineName.toString().toLowerCase();
+		if ((typeof disciplineName != "undefined")) {
+			disciplineName = disciplineName.toString().toLowerCase();
+		}
 		disciplineRank = data[dIndex][1];
 		if ((typeof disciplineName === "undefined") || disciplineName.length < 1) {
 			moreDisciplines = false;
