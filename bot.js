@@ -7,6 +7,7 @@ const vg = require("./vampire-game.js")
 const mhg = require("./monsterhearts-game.js");
 const dwg = require("./dungeonworld-game.js");
 const cg = require("./changeling-game.js");
+const ttg = require("./tangled-game.js");
 
 const DB_URI = process.env.BD_DBURI;
 const PREFIX = process.env.BD_PREFIX;
@@ -14,7 +15,7 @@ const TOKEN = process.env.BD_TOKEN;
 
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.tag}!`);
-	client.user.setActivity(`Vampire: the Requiem`);
+	client.user.setActivity(`Rolling Dice`);
 });
 
 client.on('message', async msg => {
@@ -47,6 +48,10 @@ client.on('message', async msg => {
 			console.log("Playing Changeling");
 			game = cg.ChangelingGame(gameState);
 			break;
+		case 'Tangled Threads':
+			console.log("Playing Tangled Threads");
+			game = ttg.TangledThreadsGame(gameState);
+			break;
 	}
 
 	// Ignore anything that doesn't start with our prefix
@@ -69,6 +74,9 @@ client.on('message', async msg => {
 	switch (command) {
 		case 'ping':
 			msg.reply('pong');
+			break;
+		case 'about':
+			msg.reply(`I'm a die rolling and card drawing bot. In this channel, I'm running the game ${gameState.name} using the system ${gameState.system}. Type '/help' to learn about my commands.`);
 			break;
 		case 'assign':
 			console.log("Attempting to assign character to player");

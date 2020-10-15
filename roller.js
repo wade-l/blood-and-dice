@@ -30,6 +30,28 @@ function rollPool(pool, again = 10)
 
 }
 
+function drawTangled(pool, bolstered = false, hindered = false) {
+	console.log(`Asked to draw *${pool} cards`);
+	pool = parseInt(pool);
+	if (! Number.isInteger(pool) ) return false;
+	if (pool > 50 || pool < 1 ) return false;
+	var roll = {
+		successes : 0,
+		savage: 0,
+		text : "",
+		dice: pool
+	};
+
+	for (let i = 0; i < pool; i++) {
+		let currentRoll = drawTangledCard(bolstered, hindered);
+		roll.successes += currentRoll.successes;
+		roll.savage += currentRoll.savage;
+		roll.text += currentRoll.text;
+	}
+
+	return roll;
+}
+
 function pbtaRoll(bonus) {
 	console.log(`Asked to roll PBTA-style with ${bonus}`);
 	let roll1 = rollDie(6);
@@ -47,50 +69,6 @@ function rollDie(sides) {
 		let dieRoll = Math.floor(Math.random() * sides) + 1;
 		return dieRoll;
 	}
-
-function d6ToEmoji(number) {
-	switch (number) {
-		case 1:
-			return "<:d6roll1:693649200986062851>";
-		case 2:
-			return "<:d6roll2:693649186620571658>";
-		case 3:
-			return "<:d6roll3:693649170661244998>";
-		case 4:
-			return "<:d6roll4:693649153560936469>";
-		case 5:
-			return "<:d6roll5:693649115263008829>";
-		case 6:
-			return "<:d6roll6:693649095734329405>";
-	}
-}
-
-function d10ToEmoji(number) {
-	switch (number) {
-		case 1:
-			return "<:1d10red:720382067355025460>";
-		case 2:
-			return "<:2d10red:720382488194580553>";
-		case 3:
-			return "<:3d10red:720382507522064504>";
-		case 4:
-			return "<:4d10red:720382525322559569>";
-		case 5:
-			return "<:5d10red:720382540623642634>";
-		case 6:
-			return "<:6d10red:720382556578644108>";
-		case 7:
-			return "<:7d10red:720382573657981019>";
-		case 8:
-			return "<:8d10red:720382594360803402>";
-		case 9:
-			return "<:9d10red:720382616100143204>";
-		case 10:
-			return "<:10d10red:720382637792952362>";
-		default:
-			return number;
-	}
-}
 
 function rollD10() {
 	var roll = {
@@ -144,7 +122,100 @@ function rollSTDie(threshold = 8, again = 10) {
 	return roll;
 }
 
+function drawTangledCard(bolstered = false, hindered = false) {
+	var roll = {
+		successes : 0,
+		savage: 0,
+		text  : "",
+		firstDie: 0
+	};
+
+	let die = Math.floor(Math.random() * 6) + 1;
+	roll.firstDie = die;
+	roll.text = d6ToTangledEmoji(die);
+	switch (die) {
+		case 1:
+			if (hindered) roll.successes--;
+			break;
+		case 4:
+			if (bolstered) roll.successes++;
+			break;
+		case 5:
+			roll.successes++;
+			break;
+		case 6:
+			roll.successes++;
+			roll.savage++;
+	}
+
+	return roll;
+}
+
+function d6ToEmoji(number) {
+	switch (number) {
+		case 1:
+			return "<:d6roll1:693649200986062851>";
+		case 2:
+			return "<:d6roll2:693649186620571658>";
+		case 3:
+			return "<:d6roll3:693649170661244998>";
+		case 4:
+			return "<:d6roll4:693649153560936469>";
+		case 5:
+			return "<:d6roll5:693649115263008829>";
+		case 6:
+			return "<:d6roll6:693649095734329405>";
+	}
+}
+
+function d6ToTangledEmoji(number) {
+	switch (number) {
+		case 1:
+			return "<:Hinder:766353146108182608>";
+		case 2:
+			return "<:Fail:766353161094037554>";
+		case 3:
+			return "<:Fail:766353161094037554>";
+		case 4:
+			return "<:Bolster:766353179708227587>";
+		case 5:
+			return "<:Success:766353101745553458>";
+		case 6:
+			return "<:Savage:766353126403080212>";
+		default:
+			return number;
+	}
+}
+
+function d10ToEmoji(number) {
+	switch (number) {
+		case 1:
+			return "<:1d10red:720382067355025460>";
+		case 2:
+			return "<:2d10red:720382488194580553>";
+		case 3:
+			return "<:3d10red:720382507522064504>";
+		case 4:
+			return "<:4d10red:720382525322559569>";
+		case 5:
+			return "<:5d10red:720382540623642634>";
+		case 6:
+			return "<:6d10red:720382556578644108>";
+		case 7:
+			return "<:7d10red:720382573657981019>";
+		case 8:
+			return "<:8d10red:720382594360803402>";
+		case 9:
+			return "<:9d10red:720382616100143204>";
+		case 10:
+			return "<:10d10red:720382637792952362>";
+		default:
+			return number;
+	}
+}
+
 exports.rollPool = rollPool;
 exports.pbtaRoll = pbtaRoll;
+exports.drawTangled = drawTangled;
 exports.rollDie = rollDie;
 exports.rollD10 = rollD10;
