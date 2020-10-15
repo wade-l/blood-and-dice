@@ -4,7 +4,9 @@ const ck = require("./changeling-keeper.js");
 
 function ChangelingGame(gameState) {
 
-	let sheetId = gameState.sheetId;
+	let sheetId = gameState.sheet;
+
+	console.log("sheet id is " + sheetId);
 
 	return {
 		"keeper": ck.ChangelingKeeper(sheetId, process.env.BD_GOOGLECREDENTIALS),

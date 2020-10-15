@@ -16,7 +16,7 @@ function ChangelingKeeper(sheetId, credentials) {
 		'sheetId' : sheetId,
 		'credentials': credentials,
 		getSheet: async function(id) {
-			console.log("Getting sheet for " + id);
+			console.log("Getting sheet for " + id + " on sheet id " + sheetId);
 			let characterData = await getSheetData(id, sheetId, credentials);
 			return parseSheet(characterData);
 		},
