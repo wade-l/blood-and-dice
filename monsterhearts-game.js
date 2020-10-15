@@ -2,10 +2,12 @@
 const roller = require("./roller.js");
 const mhk = require("./monsterhearts-keeper.js");
 
-function MonsterheartsGame() {
+function MonsterheartsGame(gameState) {
+
+	let sheetId = gameState.sheet;
 
 	return {
-		"keeper": mhk.MonsterHeartsKeeper('1jU_yUyURD6bIndIKyeZJb-vsnoY20M1kuOAD0GhY5xc', process.env.BD_GOOGLECREDENTIALS),
+		"keeper": mhk.MonsterHeartsKeeper(sheetId, process.env.BD_GOOGLECREDENTIALS),
 		"commands": ['roll','roll8','roll9','sheet','stats','stat','asp','aspirations','conditions','vitae','health','willpower','beats','experiences'],
 		"hasCommand": function (command) {
 			return this.commands.includes(command);

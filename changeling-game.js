@@ -2,10 +2,12 @@
 const roller = require("./roller.js");
 const ck = require("./changeling-keeper.js");
 
-function ChangelingGame() {
+function ChangelingGame(gameState) {
+
+	let sheetId = gameState.sheetId;
 
 	return {
-		"keeper": ck.ChangelingKeeper('1jXdireyX3GkwGRziK7Vqo1O5kmQEYy2oH1IXqzAd-Zw', process.env.BD_GOOGLECREDENTIALS),
+		"keeper": ck.ChangelingKeeper(sheetId, process.env.BD_GOOGLECREDENTIALS),
 		"commands": ['roll','r','roll8','r8','roll9','r9','sheet','stats','stat','asp','aspirations','conditions','health','willpower','beats','experiences'],
 		"hasCommand": function (command) {
 			return this.commands.includes(command);

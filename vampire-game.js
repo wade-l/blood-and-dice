@@ -2,10 +2,12 @@
 const roller = require("./roller.js");
 const vk = require("./vampire-keeper.js");
 
-function VampireGame() {
+function VampireGame(gameState) {
+
+	let sheetId = gameState.sheet;
 
 	return {
-		"keeper": vk.VampireKeeper('1OeSRHL38EheCYsdHpxX04cI5ghHqYeIf2u43hERyYI8', process.env.BD_GOOGLECREDENTIALS),
+		"keeper": vk.VampireKeeper(sheetId, process.env.BD_GOOGLECREDENTIALS),
 		"commands": ['roll','r','roll8','r8','roll9','r9','sheet','stats','stat','asp','aspirations','conditions','vitae','health','willpower','beats','experiences'],
 		"hasCommand": function (command) {
 			return this.commands.includes(command);

@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 var GameSchema = new mongoose.Schema({
 	name: String,
 	system: String,
+	sheet: String,
 	characters: Map
 });
 

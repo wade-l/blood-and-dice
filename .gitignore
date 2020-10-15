@@ -113,3 +113,6 @@ vampire-config.json
 # node-persist
 .node-persist/
 .node-persist - Copy/
+
+# local environment files
+.env*

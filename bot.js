@@ -30,22 +30,22 @@ client.on('message', async msg => {
 
 	console.log(gameState);
 
-	switch (msg.channel.guild.id) {
-		case '691158656951123980':
+	switch (gameState.system) {
+		case 'Requiem':
 			console.log("Playing Vampire");
-			game = vg.VampireGame();
+			game = vg.VampireGame(gameState);
 			break;
-		case '690990507085791242':
+		case 'Monsterhearts':
 			console.log("Playing Monsterhearts");
-			game = mhg.MonsterheartsGame();
+			game = mhg.MonsterheartsGame(gameState);
 			break;
-		case '691864914532368404':
+		case 'Dungeon World':
 			console.log("Playing Dungeon World");
-			game = dwg.DungeonWorldGame();
+			game = dwg.DungeonWorldGame(gameState);
 			break;
-		case '747476140012077147':
+		case 'Changeling: the Lost':
 			console.log("Playing Changeling");
-			game = cg.ChangelingGame();
+			game = cg.ChangelingGame(gameState);
 			break;
 	}
 

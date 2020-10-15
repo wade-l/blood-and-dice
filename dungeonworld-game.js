@@ -2,10 +2,12 @@
 const roller = require("./dungeonworld-roller.js");
 const dwk = require("./dungeonworld-keeper.js");
 
-function DungeonWorldGame() {
+function DungeonWorldGame(gameState) {
+
+	let sheetId = gameState.sheet;
 
 	return {
-		"keeper": dwk.DungeonWorldKeeper('1VOvdNMqAy9RSvLCZ5DazXep9zcy1h0zM8WeBD5wihFY', process.env.BD_GOOGLECREDENTIALS),
+		"keeper": dwk.DungeonWorldKeeper(sheetId, process.env.BD_GOOGLECREDENTIALS),
 		"commands": ['roll','sheet','stats','stat'],
 		"hasCommand": function (command) {
 			return this.commands.includes(command);
