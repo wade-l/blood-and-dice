@@ -5,11 +5,7 @@ const gconn = require("./googleconnection.js");
 const Discord = require('discord.js');
 const roller = require("./roller.js");
 
-const attributes = [['intelligence','wits','resolve'],['strength','dexterity','stamina'], ['presence','manipulation','composure']];
-const mental_skills = ['academics','computer','crafts','investigation','medicine','occult','politics','science'];
-const physical_skills = ['athletics','brawl','drive','firearms','larceny','stealth','survival','weaponry'];
-const social_skills = ['animal_ken','empathy','expression','intimidation','persuasion','socialize','streetwise','subterfuge'];
-const skills = [ mental_skills, physical_skills, social_skills];
+const skills = ['athletics','craftsmanship','coercion','discipline','endurance','hand-to-hand','larceny','medicine','perception','presence','research','shooting','stealth','survival'];
 
 function TangledThreadsKeeper(sheetId, credentials) {
 	return {
@@ -42,7 +38,12 @@ function TangledThreadsKeeper(sheetId, credentials) {
 		},
 		roll: async function (rollString, characterId, bolstered = false, hindered = false) {
 			const dividersRegex = /[+\-\#]/;
-			//let sheet = await this.getSheet(characterId);
+			let sheet = null;
+			try {
+				sheet = await this.getSheet(characterId);
+			} catch (e) {
+				console.log("No sheet, but that's okay");
+			}
 			let rollText = "";
 
 			let nextIndex = rollString.search(dividersRegex);
@@ -66,16 +67,13 @@ function TangledThreadsKeeper(sheetId, credentials) {
 
 				let dice = 0;
 				if (isNaN(term)) {
-					/*let stat = sheet.getStat(term);
+					if (sheet == null) {
+						return "an error! You can't use stat names until you've had a character sheet assigned to you.";
+					}
+					let stat = sheet.getStat(term);
 					if (lastDivider != '') rollText += " " + lastDivider + " ";
-					if (stat.value > 0 ) {
-						rollText += `${stat.name} (${stat.value})`;
-						dice = parseInt(stat.value);
-					} else {
-						let unskilledPenalty = getUnskilledPenalty(stat.name);
-						rollText += `${stat.name} (Unskilled ${unskilledPenalty})`;
-						dice = unskilledPenalty;
-					}*/
+					rollText += `${stat.name} (${stat.value})`;
+					dice = parseInt(stat.value);
 				} else {
 					if (lastDivider != '') rollText += " " + lastDivider + " ";
 					rollText += `${term}`;
@@ -92,6 +90,7 @@ function TangledThreadsKeeper(sheetId, credentials) {
 				lastDivider = nextDivider;
 			}
 
+
 			if (termCount > 1) {
 				rollText+= ` (${totalDice} cards total)`;
 			}
@@ -105,6 +104,11 @@ function TangledThreadsKeeper(sheetId, credentials) {
 			}
 
 			rollText += " cards ";
+
+			if (totalDice < 1) {
+				rollText += ", but since they don't have any cards they fail in the worst way possible.";
+				return rollText;
+			}
 
 			console.log("About to draw");
 			let roll = roller.drawTangled(totalDice, bolstered, hindered);
@@ -135,71 +139,81 @@ function TangledThreadsSheet (name) {
 			let fSheet = "";
 			fSheet += "```fix\r";
 			fSheet += `Character: \t ${this.characterName}\tPlayer: \t${this.playerName}\r`;
-			fSheet += "\rAttributes\r";
+			fSheet += `Concept: \t ${this.concept}\r\r`;
 
-			for (let row = 0; row < 3; row++) {
-				for (let column = 0; column < 3; column ++) {
-					let attribute = attributes[column][row];
-					fSheet += formatStat(attribute, this[attribute]);
+			let rightcolumn = [
+				"\t\tQualities",
+				formatStat("Luck",this.luck) + "\t" + formatStat("Luck Points", this.luckpoints),
+				formatStat("Potential", this.potential),
+				formatStat("Power", this.power),
+				formatStat("Skill",this.skill)
+			];
+			let leftcolumn = ["Threads".padEnd(35),
+				`${formatThread("Target","Role","Twisted")}`
+			];
+
+			let threads = 0;
+			while (threads < this.threads.length) {
+				leftcolumn.push(`${formatThread(this.threads[threads].target,this.threads[threads].role,this.threads[threads].twisted)}`);
+				threads++;
+			}
+
+			let rows = 0;
+			while (rows < Math.max(rightcolumn.length,leftcolumn.length)) {
+				if (rows < leftcolumn.length) {
+					fSheet += leftcolumn[rows].padEnd(35);
+				} else {
+					fSheet += "".padEnd(35);
+				}
+
+				if (rows < rightcolumn.length) {
+					fSheet += rightcolumn[rows];
+				
 				}
 				fSheet += "\r";
+				rows++;
 			}
+
 			fSheet += "\rSkills\r";
 
-			for (let row = 0; row < 8; row++) {
-				for (let column = 0; column < 3; column ++) {					
-					let skill = skills[column][row];
-					let skillvalue = this[skill];
-					if (typeof this.specialities[skill] != 'undefined') {
-						skill += "(" + this.specialities[skill] + ")";
-					}
-					fSheet += formatStat(skill, skillvalue);
-				}
-				fSheet += "\r"
-			}
-			
-			fSheet += "\r";
+			let i = 0;
+			while (i < Math.floor(skills.length / 2)) {
+				let firstSkill = skills[i];
+				let firstSkillValue = this[firstSkill];
+				let secondSkill = skills[i+7];
+				let secondSkillValue = this[secondSkill];
 
-			let maxRows = Math.max(4,this.disciplines.length, this.merits.length);
-			for (let i = 0; i < maxRows; i++) {
-				if (typeof this.disciplines[i] != 'undefined') {
-					fSheet += formatStat(this.disciplines[i].name, this.disciplines[i].value);
-				} else {
-					fSheet += formatStat("","");
-				}
-				if (typeof this.merits[i] != 'undefined') {
-					fSheet += formatStat(this.merits[i].name, this.merits[i].value);
-				} else {
-					fSheet += formatStat("","");
-				}
+				fSheet += formatStat(firstSkill,firstSkillValue);
+				fSheet += formatStat(secondSkill, secondSkillValue);
 				fSheet += "\r";
+
+				i++;
 			}
-			fSheet += `Vitae: \t\t ${this.vitae} / ${this.maxVitae}\r`;
-			fSheet += `Willpower: \t ${this.willpower} / ${this.maxWillpower}\r`;
-			fSheet += `Beats: \t\t ${this.beats} \t Experiences: ${this.experiences}\r`;
+
+			fSheet += "\rTraits\r";
+			let traits = 0;
+			while (traits < this.traits.length) {
+				fSheet += formatStat(this.traits[traits].name,this.traits[traits].value);
+				fSheet += "\r";
+
+				traits++;
+			}
+
+			fSheet += "\rWounds\r";
+			fSheet += `${this.surface.suffered} surface wounds (${this.surface.capacity} max)\r`;
+			fSheet += `${this.severe.suffered} severe wounds (${this.severe.capacity} max)\r`;
+			fSheet += `${this.crippled.suffered} crippled wounds (${this.crippled.capacity} max)\r`;
+
+			fSheet += "\r\r";
+			fSheet += `Character Points: ${this.characterpoints}\r`;
+
 			fSheet += "```\r";
 			return fSheet;
 		},
-		getFormattedStatBlock: function () {
-				let fSheet = "";
-				fSheet += "```fix\r";
-				fSheet += `Character: \t ${this.characterName}\tPlayer: \t${this.playerName}\r`;
-				fSheet += `Vitae: \t\t ${this.vitae} / ${this.maxVitae}\r`;
-				fSheet += `Willpower: \t ${this.willpower} / ${this.maxWillpower}\r`;
-				fSheet += `Beats: \t\t ${this.beats} \t Experiences: ${this.experiences}\r`;
-				fSheet += "```\r";
-				return fSheet;
-		},
 		getStat: function (stat) {
 			let matchedStat = [];
-			let allStats = attributes.flat(2).concat(skills.flat(2));
 
-			// A hack specifically for animal ken
-			if (stat == "ken") {
-				stat = "animal_ken";
-			}
-
-			let matchStats = allStats.filter(function (s) {
+			let matchStats = skills.filter(function (s) {
 				return (s.substring(0,stat.length).localeCompare(stat) == 0);
 			})
 			for (let i = 0; i < matchStats.length; i++) {
@@ -209,26 +223,6 @@ function TangledThreadsSheet (name) {
 				});
 			}
 			
-			let matchDisciplines = this.disciplines.filter(function (d) {
-				return (d.name.substring(0,stat.length).localeCompare(stat) == 0);
-			});
-			for (let i = 0; i < matchDisciplines.length; i++) {
-				matchedStat.push({
-					name: firstCap(matchDisciplines[i].name),
-					value: matchDisciplines[i].value
-				});
-			}
-
-			let matchMerits = this.merits.filter(function (m) {
-				return (m.name.substring(0,stat.length).localeCompare(stat) == 0);
-			});
-			for (let i = 0; i < matchMerits.length; i++) {
-				matchedStat.push({
-					name: firstCap(matchMerits[i].name),
-					value: matchMerits[i].value
-				});
-			}
-
 			if (matchedStat.length == 1) {
 				return matchedStat[0];
 			} else {
@@ -274,93 +268,76 @@ async function setSheetValue(value,cell,sheetName,sheetId,credentials) {
 }
 
 function parseSheet(data) {
-	let sheet = VampireSheet(data[0][1]);
-	sheet.playerName = data[0][4];
-	for (let row = 0; row < 3; row++) {
-		for (let column = 0; column < 3; column ++) {
-			sheet[attributes[column][row]] = parseInt(data[row+5][(column*3)+1]);
-		}
-	}
-	sheet.specialities = {};
+	let sheet = TangledThreadsSheet(data[0][1]);
+	sheet.playerName = data[0][3];
+	sheet.concept = data[1][1];
 
-	for (let row = 0; row < 8; row++) {
-		for (let column = 0; column < 3; column ++) {
-			let skillname = skills[column][row];
-			let skilldata = data[row+10][(column*3)+1];
-			let skillvalue = parseInt(skilldata);
-			if (! (skillvalue > 0) ) skillvalue = 0;	
-			sheet[skillname] = skillvalue;
-			let speciality = data[row+10][(column*3)+2];
-			if (speciality) {
-				sheet.specialities[skillname] = speciality;
+	sheet.luck = data[5][5];
+	sheet.luckpoints = data[5][7];
+	sheet.potential = data[6][5];
+	sheet.power = data[7][5];
+	sheet.skill = data[8][5];
+	sheet.characterpoints = data[9][5];
+
+	let i = 0;
+	while (i < skills.length) {
+		sheet[skills[i]] = data[13 + (i % 7)][1 + (Math.floor(i / 7)*2)];
+		i++;
+	}
+
+	sheet.threads = [];
+
+	i = 0;
+	while (i < 5) {
+		let target = data[5+i][0];
+		if (typeof target !== "undefined" && target.length > 0) {
+			let role = data[5+i][1];
+			let twisted = data[5+1][2];
+			if (typeof twisted === "undefined" || twisted.length < 1) twisted = "No";
+
+			sheet.threads.push({
+				target: target,
+				role: role,
+				twisted: twisted
+			});
+		}
+		i++;
+	}
+
+	sheet.traits = [];
+	let traitName = undefined;
+	let traitRank = undefined;
+	let moreTraits = true;
+	let tIndex = 22;
+	while (moreTraits) {
+		if (typeof data[tIndex] === "undefined") {
+			moreTraits = false;
+		} else {
+			traitName = data[tIndex][0];
+
+			if ((typeof traitName === "undefined") || traitName.length < 1) {
+				moreTraits = false;
+			} else {
+				traitName = traitName.toString().toLowerCase();
+				traitRank = data[tIndex][1];
+				sheet.traits.push({
+					name: traitName,
+					value: traitRank
+				});
 			}
+			tIndex++;
 		}
-	}
-	sheet.vitae = parseInt(data[23][7]);
-	sheet.maxVitae = parseInt(data[23][9]);
-	sheet.willpower = parseInt(data[21][7]);
-	sheet.maxWillpower = parseInt(data[21][9]);
-	sheet.experiences = parseInt(data[29][7]);
-	sheet.beats = parseInt(data[30][7]);
-	sheet.aspirations = [ data[1][9], data[2][9], data[3][9]];
-	sheet.conditions = [];
-	let conditionName = undefined;
-	let conditionText = undefined;
-	let moreConditions = true;
-	let cIndex = 6;
-	while (moreConditions) {
-		conditionName = data[cIndex][9];
-		conditionText = data[cIndex][10];
-		if (typeof conditionName === "undefined") {
-			moreConditions = false;
-		} else {
-			sheet.conditions.push({
-				name: conditionName,
-				text: conditionText
-			});
-		}
-		cIndex++;
 	}
 
-	sheet.disciplines = [];
-	let disciplineName = undefined;
-	let disciplineRank = undefined;
-	let moreDisciplines = true;
-	let dIndex = 20;
-		while (moreDisciplines) {
-		disciplineName = data[dIndex][0];
-		disciplineName = disciplineName.toString().toLowerCase();
-		disciplineRank = data[dIndex][1];
-		if ((typeof disciplineName === "undefined") || disciplineName.length < 1) {
-			moreDisciplines = false;
-		} else {
-			sheet.disciplines.push({
-				name: disciplineName,
-				value: disciplineRank
-			});
-		}
-		dIndex++;
-	}
-
-	sheet.merits = [];
-	let meritName = undefined;
-	let meritRank = undefined;
-	let moreMerits = true;
-	let mIndex = 20;
-	while (moreMerits) {
-		meritName = data[mIndex][3];
-		meritRank = data[mIndex][4];
-		if ((typeof meritName === "undefined") || meritName.length < 1) {
-			moreMerits = false;
-		} else {
-			meritName = meritName.toString().toLowerCase();
-			sheet.merits.push({
-				name: meritName,
-				value: meritRank
-			});
-		}
-		mIndex++;
-	}
+	sheet.surface = {
+		capacity : data[22][3],
+		suffered : data[22][4]};
+	sheet.severe = {
+		capacity : data[23][3],
+		suffered : data[23][4]};
+	sheet.crippled = {
+		capacity : data[24][3],
+		suffered : data[24][4]};
 
 	return sheet;
 }
@@ -373,15 +350,18 @@ function formatStat(stat, value) {
 	let formattedString = firstCap(stat).substring(0,20);
 	formattedString = formattedString.padEnd(20);
 	formattedString += "\t";
+	if (typeof value === "undefined") value = 0;
 	formattedString += value.toString().padEnd(2);
 	formattedString += "\t";
 	return formattedString;
 }
 
-function getUnskilledPenalty(skill) {
-	skill = skill.toLowerCase();
-	if (mental_skills.includes(skill)) return -3;
-	if (physical_skills.includes(skill)) return -1;
-	if (social_skills.includes(skill)) return -1;
-	return 0;
+function formatThread(target, role, twisted) {
+	let formattedString = firstCap(target).substring(0,15);
+	formattedString = formattedString.padEnd(15);
+	formattedString += "\t";
+	formattedString += role.toString().padEnd(10);
+	formattedString += "\t";
+	formattedString += twisted.toString().padEnd(10);
+	return formattedString;
 }	

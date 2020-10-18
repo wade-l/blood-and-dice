@@ -8,7 +8,7 @@ function TangledThreadsGame(gameState) {
 
 	return {
 		"keeper": ttk.TangledThreadsKeeper(sheetId, process.env.BD_GOOGLECREDENTIALS),
-		"commands": ['draw','d','hinder','h','bolster','b','combo','c'],
+		"commands": ['draw','d','hinder','h','bolster','b','combo','c','sheet','help'],
 		"hasCommand": function (command) {
 			return this.commands.includes(command);
 		},
@@ -72,87 +72,8 @@ function TangledThreadsGame(gameState) {
 					console.log(sheet);
 					let sheetMessage = `Character Sheet for ${sheet.characterName} pulled from GoogleDocs:\r`;
 					sheetMessage += sheet.getFormattedSheet();
-					msgDest.send(sheetMessage);
-					break;
-				}
-				case 'stats': {
-					let sheet = await keeper.getSheet(id);
-					let sheetMessage = `Statblock for ${sheet.characterName}:\r`;
-					sheetMessage += sheet.getFormattedStatBlock();
-					msgDest.send(sheetMessage);
-					break;
-				}
-				case 'stat': {
-					let sheet = await keeper.getSheet(id);
-					try {
-						let stat = sheet.getStat(args.shift().toLowerCase());
-						msg.reply(`Your ${stat.name} is ${stat.value}.`);
-					} catch (e) {
-						console.log("getStat error:");
-						console.log(e);
-						msg.reply("Couldn't unambigiously find a stat of that name. Maybe check your spelling or make it less ambigious?");
-					}
-					break;
-				}
-				case 'asp':
-				case 'aspirations': {
-					let sheet = await keeper.getSheet(id);
-					let aspirationsText = formatAspirations(sheet);
-					let replyText = `Aspirations for ${sheet.characterName}:\r`;
-					replyText += "```fix\r";
-					replyText += `${aspirationsText}`;
-					replyText +="```\r";
-					msgDest.send(replyText);
-					break;
-				}
-				case 'conditions': {
-					let sheet = await keeper.getSheet(id);
-					let conditionsText = formatConditions(sheet);
-					let replyText = `Conditions for ${sheet.characterName}:\r`;
-					replyText += "```fix\r";
-					replyText += `${conditionsText}`;
-					replyText +="```\r";
-					msgDest.send(replyText);
-					break;
-				}
-				case 'vitae':
-				case 'health':
-				case 'willpower':
-				case 'beats':
-				case 'experiences': {
-					console.log(`Trying to adjust ${command}`);
-
-					let sheet = await keeper.getSheet(id);
-
-					let adjustment = args.join('').toLowerCase().replace(/\s+/g, '');
-					if (adjustment.charAt(0) == '+') {
-						adjustment = adjustment.slice(1);
-						sheet[command] += parseInt(adjustment);
-
-						if ((command == 'beats') && (sheet[command] >= 5)) {
-							let beats = sheet['beats'] - 5;
-							let experiences = sheet['experiences'] + 1;
-							keeper.setStat(id,'beats',beats);
-							keeper.setStat(id,'experiences',experiences);
-							msg.reply(`you added ${adjustment} to your beats, and gained experience (new beats: ${beats}, experiences: ${experiences}).\r`);
-
-						} else {
-							keeper.setStat(id,command,sheet[command]);
-							msg.reply(`you added ${adjustment} to your ${command} (new amount: ${sheet[command]}).\r`);
-						}
-					} else if (adjustment.charAt(0) == '-') {
-						adjustment = adjustment.slice(1);
-						sheet[command] -= parseInt(adjustment);
-						keeper.setStat(id,command,sheet[command]);
-						msg.reply(`you removed ${adjustment} from your ${command} (new amount: ${sheet[command]}).\r`);
-					} else if ( Number.isInteger(parseInt(adjustment))) {
-						sheet[command] = parseInt(adjustment);
-						keeper.setStat(id,command,sheet[command]);
-						msg.reply(`you set your ${command} to ${adjustment}.\r`);
-					} else {
-						msg.reply("I don't know what you were trying to do.");
-					}
-
+					msg.reply("I've tried to DM you a copy of your character sheet.");
+					msg.author.send(sheetMessage);
 					break;
 				}
 				default:
@@ -163,20 +84,18 @@ function TangledThreadsGame(gameState) {
 		"getHelp": function() {
 			let help = "Commands:\r";
 			help += "```fix\r";
-			help += "/aspirations\t\tSee your aspirations\r";
-			help += "/asp\t\tSee your aspirations\r";
-			help += "/conditions\t\tSee your conditions\r";
-			help += "/conditions\t\tSee your conditions\r";
-			help += "/dm <aspirations/conditions/sheet>\tSend you the information via DM\r";
-			help += "/roll <X> \t\t Roll <X> dice\r";
-			help += "/roll8 <X> \t\t Roll <X> dice with the 8-again quality\r";
-			help += "/roll9 <X> \t\t Roll <X> dice with the 9-again quality\r";
-			help += "/r | /r8 | /r9 \t\t Same as /roll, /roll8, /roll9 but shorter\r"
-			help += "/sheet\t\tSee your character sheet\r";
-			help += "/stats\t\tSee brief character stats\r";
-			help += "/vitae/willpower/experiences/beats <X>\t\t Sets that stat to <X>\r";
-			help += "/vitae/willpower/experiences/beats +<X>\t\t Adds <X> to the stat.\r";
-			help += "/vitae/willpower/experiences/beats -<X>\t\t Subtracts <X> from the stat.\r";
+			help += "/draw <number or skill>\t\tDo a regular draw of that many cards\r";
+			help += "/d <number or skill>\t\t\tShort for draw\r";
+			help += "/bolster <number or skill>\t\tDo a bolstered draw of that many cards\r";
+			help += "/b <number or skill>\t\t\tShort for bolster\r";
+			help += "/hinder <number or skill>\t\tDo a hindered draw of that many cards\r";
+			help += "/h <number or skill>\t\t\tShort for hinder\r";
+			help += "/combo <number or skill>\t\tDo a both bolstered and hindered draw of that many cards\r";
+			help += "/c <number or skill>\t\t\tShort for combo\r";
+			help += "/sheet\t\tDM you your character sheet\r";
+			help += "(if /sheet says you have no character assigned, it just means Wade hasn't entered the stats yet. He's working on it!)";
+			help += "\r\rAt this moment the bot does not allow you to subtract luck points, do twists, add wounds or the like automatically. Tag Wade and he'll adjust your sheet for you if needed.\r"
+
 			help += "```";
 			return help;
 		}
