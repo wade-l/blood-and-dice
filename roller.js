@@ -13,7 +13,7 @@ function rollPool(pool, again = 10)
 	};
 
 	if (pool < 1) {
-		let currentRoll = rollDie(10, again);
+		let currentRoll = rollSTDie(10, again);
 		roll.successes = currentRoll.successes;
 		roll.text = currentRoll.text;
 		if (currentRoll.firstDie == 1) roll.successes = -1;
