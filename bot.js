@@ -8,6 +8,7 @@ const mhg = require("./monsterhearts-game.js");
 const dwg = require("./dungeonworld-game.js");
 const cg = require("./changeling-game.js");
 const ttg = require("./tangled-game.js");
+const pbtag = require("./generic-pbta.js");
 
 const DB_URI = process.env.BD_DBURI;
 const PREFIX = process.env.BD_PREFIX;
@@ -51,6 +52,10 @@ client.on('message', async msg => {
 		case 'Tangled Threads':
 			console.log("Playing Tangled Threads");
 			game = ttg.TangledThreadsGame(gameState);
+			break;
+		case 'MotW':
+			console.log("Playing Monster of the Week");
+			game = pbtag.PbtAGame(gameState);
 			break;
 	}
 
