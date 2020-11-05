@@ -12,6 +12,7 @@ function DungeonWorldKeeper(sheetId, credentials) {
 		'sheetId' : sheetId,
 		'credentials': credentials,
 		getSheet: async function(id) {
+			console.log(`Sheet id: ${id}`);
 			let offset = (parseInt(id) - 1) * 5;
 			let firstcell = String.fromCharCode(65 + offset) + "1";
 			let lastcell = String.fromCharCode(65 + offset + 4) + "43";
@@ -27,7 +28,9 @@ function DungeonWorldKeeper(sheetId, credentials) {
 		},
 		roll: async function (rollString, characterId) {
 			const dividersRegex = /[+\-\#]/;
+			console.log("Getting sheet");
 			let sheet = await this.getSheet(characterId);
+			console.log("Sheet got");
 			let rollText = "";
 
 			let nextIndex = rollString.search(dividersRegex);
@@ -142,12 +145,12 @@ async function getSheetData(cells, sheetName, sheetId, credentials) {
 	    	spreadsheetId: sheetId,
 	    	range: `${sheetName}!${cells}`,
 	 	});
-	 	let rows = res.data.values;
+	 	return res.data.values;
 	} catch (err) {
  		console.log(err);
  		return null;
  	}
-	return rows;
+ 	return null;
 }
 
 async function setSheetValue(value,cell,sheetName,sheetId,credentials) {

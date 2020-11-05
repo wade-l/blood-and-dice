@@ -19,6 +19,7 @@ function DungeonWorldGame(gameState) {
 			let msgDest = context.msgDest;
 			let msg = context.msg;
 			let keeper = this.keeper;
+			console.log(context);
 
 			if (context.character === undefined) {
 				msg.reply("sorry, you don't appear to have a character assigned to you.");
@@ -31,7 +32,8 @@ function DungeonWorldGame(gameState) {
 						let roll1 = roller.rollDie(6);
 						let roll2 = roller.rollDie(6);
 						let total = roll1 + roll2;
-						msg.channel.send(`${msg.member} rolled ${dice.d6ToEmoji(roll1)} ${dice.d6ToEmoji(roll2)} : **${total}**`);	
+						let roll = roller.pbtaRoll(0)
+						msg.channel.send(`${msg.member} rolled ${roll.dice} : **${roll.total}**`);	
 					} else {
 						let rollString = args.join(" ").toLowerCase();
 						let sides = parseInt(rollString);
@@ -41,7 +43,7 @@ function DungeonWorldGame(gameState) {
 							msg.reply(`rolled ${roll} on a ${sides}-sided die.`);
 						} else {
 							console.log(`Trying to roll '${sides}'`);
-							let rollText = await keeper.roll(rollString,character.characterName);
+							let rollText = await keeper.roll(rollString,character.source);
 							msg.channel.send(`${msg.member} rolled ${rollText}`);
 						}
 					}
