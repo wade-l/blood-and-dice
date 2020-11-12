@@ -33,6 +33,12 @@ function WoDKeeper(sheetId, credentials) {
 			let sheet = await this.getSheet(characterId);
 			let rollText = "";
 
+			if (sheet.woundPenalty < 0) {
+				rollString += " + WoundPenalty";
+			}
+
+			console.log(rollString);
+
 			let nextIndex = rollString.search(dividersRegex);
 			let nextDivider = rollString.charAt(nextIndex);
 			let lastDivider = '';
@@ -56,7 +62,7 @@ function WoDKeeper(sheetId, credentials) {
 				if (isNaN(term)) {
 					let stat = sheet.getStat(term);
 					if (lastDivider != '') rollText += " " + lastDivider + " ";
-					if (stat.value > 0 ) {
+					if (stat.value != 0 ) {
 						rollText += `${stat.name} (${stat.value})`;
 						dice = parseInt(stat.value);
 					} else {
@@ -253,6 +259,12 @@ function WoDSheet (name) {
 				stat = "animal_ken";
 			}
 
+			if (stat == "WoundPenalty") {
+				return {name: "Wound Penalty",
+						value: this.woundPenalty
+					};
+			}
+
 			let matchStats = allStats.filter(function (s) {
 				return (s.substring(0,stat.length).localeCompare(stat) == 0);
 			})
@@ -282,6 +294,7 @@ function WoDSheet (name) {
 					value: matchMerits[i].value
 				});
 			}
+
 
 			if (matchedStat.length == 1) {
 				return matchedStat[0];
