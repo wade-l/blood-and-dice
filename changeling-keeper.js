@@ -42,14 +42,20 @@ function ChangelingKeeper(sheetId, credentials) {
 				}
 			}
 		}
-		sheet.willpower = parseInt(data[38][4]);
-		sheet.glamour = parseInt(data[38][1]);
-		sheet.maxGlamour = parseInt(data[38][2]);
-		sheet.maxWillpower = parseInt(data[38][5]);
-		sheet.experiences = parseInt(data[1][8]);
-		sheet.beats = parseInt(data[0][8]);
+		sheet.willpower = parseInt(data[38][4]) || 0;
+		sheet.glamour = parseInt(data[38][1]) || 0;
+		sheet.maxGlamour = parseInt(data[38][2]) || 0;
+		sheet.maxWillpower = parseInt(data[38][5]) || 0;
+		sheet.experiences = parseInt(data[1][8]) || 0;
+		sheet.beats = parseInt(data[0][8]) || 0;
+		sheet.health = parseInt(data[41][1]) || 0;
+		sheet.bashing = parseInt(data[41][2]) || 0;
+		sheet.lethal = parseInt(data[41][3]) || 0;
+		sheet.aggravated = parseInt(data[41][4]) || 0;
+		sheet.woundPenalty = parseInt(data[42][1]) || 0;
 		sheet.aspirations = [ data[1][9], data[2][9], data[3][9]];
 		sheet.conditions = [];
+
 		let conditionName = undefined;
 		let conditionText = undefined;
 		let moreConditions = true;
@@ -179,6 +185,14 @@ function ChangelingSheet (name) {
 				fSheet += `Glamour: \t ${this.glamour} / ${this.maxGlamour}\r`;
 				fSheet += `Willpower: \t ${this.willpower} / ${this.maxWillpower}\r`;
 				fSheet += `Beats: \t\t ${this.beats} \t Experiences: ${this.experiences}\r`;
+				let healthString = "Health: \t\t";
+				healthString += "B".repeat(this.bashing);
+				healthString += "L".repeat(this.lethal);
+				healthString += "A".repeat(this.aggravated);
+				let healthLeft = this.health - (this.bashing + this.lethal + this.aggravated);
+				if (healthLeft > 0) healthString += "O".repeat(healthLeft);
+				healthString += `  (Wound Penalty: ${this.woundPenalty})\r`;
+				fSheet += healthString;
 				fSheet += "```\r";
 				return fSheet;
 		},
@@ -189,6 +203,12 @@ function ChangelingSheet (name) {
 			// A hack specifically for animal ken
 			if (stat == "ken") {
 				stat = "animal_ken";
+			}
+
+			if (stat == "WoundPenalty") {
+				return {name: "Wound Penalty",
+						value: this.woundPenalty
+					};
 			}
 
 			let matchStats = allStats.filter(function (s) {
