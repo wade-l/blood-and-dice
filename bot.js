@@ -9,6 +9,7 @@ const dwg = require("./dungeonworld-game.js");
 const cg = require("./changeling-game.js");
 const ttg = require("./tangled-game.js");
 const pbtag = require("./generic-pbta.js");
+const dfg= require("./dfrpg-game.js");
 
 const DB_URI = process.env.BD_DBURI;
 const PREFIX = process.env.BD_PREFIX;
@@ -56,6 +57,10 @@ client.on('message', async msg => {
 		case 'MotW':
 			console.log("Playing Monster of the Week");
 			game = pbtag.PbtAGame(gameState);
+			break;
+		case 'DFRPG':
+			console.log("Playing DFRPG");
+			game = dfg.DFGame(gameState);
 			break;
 	}
 
@@ -117,7 +122,9 @@ client.on('message', async msg => {
 		case 'help':
 			msg.reply(game.getHelp());
 		default:
+			console.log("Default");
 			if (game.hasCommand(command)) {
+				console.log("Has command");
 				let context = {
 					"character": character,
 					"msgDest": msgDest,

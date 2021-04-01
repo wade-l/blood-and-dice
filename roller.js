@@ -65,6 +65,25 @@ function pbtaRoll(bonus) {
 	return result;
 }
 
+function fateRoll(bonus) {
+	console.log(`Asked to roll Fate-style with ${bonus}`);
+	let total = bonus;
+	let text = "";
+	for (let i = 0; i < 4; i++) {
+		let roll = rollDie(3) - 2;
+		total += roll;
+		text += dFToEmoji(roll)
+		if (i < 3) {
+			text += " ";
+		}
+	}
+	let result = {
+		total: total,
+		dice: text
+	}
+	return result;
+}
+
 function rollDie(sides) {
 		let dieRoll = Math.floor(Math.random() * sides) + 1;
 		return dieRoll;
@@ -151,6 +170,17 @@ function drawTangledCard(bolstered = false, hindered = false) {
 	return roll;
 }
 
+function dFToEmoji(number) {
+	switch (number) {
+		case -1:
+			return "<:FateMinus:827077447035781131>";
+		case 0:
+			return "<:FateBlank:827077447051640893>";
+		case 1:
+			return "<:FatePlus:827077446976667679>";
+	}
+}
+
 function d6ToEmoji(number) {
 	switch (number) {
 		case 1:
@@ -216,6 +246,7 @@ function d10ToEmoji(number) {
 
 exports.rollPool = rollPool;
 exports.pbtaRoll = pbtaRoll;
+exports.fateRoll = fateRoll;
 exports.drawTangled = drawTangled;
 exports.rollDie = rollDie;
 exports.rollD10 = rollD10;
