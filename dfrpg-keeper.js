@@ -23,17 +23,8 @@ function DFKeeper(sheetId, credentials) {
 		setStat: async function(id, stat, value) {
 			let cellId;
 			switch (stat) {
-				case 'vitae':
-					cellId = 'H24';
-					break;
-				case 'willpower':
-					cellId = 'H22';
-					break;
-				case 'beats':
-					cellId = 'H31';
-					break;
-				case 'experiences':
-					cellId = 'H30';
+				case 'fate':
+					cellId = 'K5';
 					break;
 			}
 			if (typeof cellId != "undefined") {
@@ -120,11 +111,6 @@ function DFSheet (name) {
 			let matchedStat = [];
 			let allStats = attributes.flat(2).concat(skills.flat(2));
 
-			// A hack specifically for animal ken
-			if (stat == "ken") {
-				stat = "animal_ken";
-			}
-
 			let matchStats = allStats.filter(function (s) {
 				return (s.substring(0,stat.length).localeCompare(stat) == 0);
 			})
@@ -174,7 +160,7 @@ async function getSheetData(characterName, sheetId, credentials) {
   	let characters =[];
   	let res = await sheets.spreadsheets.values.get({
     	spreadsheetId: sheetId,
-    	range: `${characterName}!A1:K50`,
+    	range: `${characterName}!A1:Z50`,
  	});
  	let rows = res.data.values;
 	return rows;
@@ -200,8 +186,8 @@ async function setSheetValue(value,cell,sheetName,sheetId,credentials) {
 }
 
 function parseSheet(data) {
-	let sheet = VampireSheet(data[0][1]);
-	sheet.playerName = data[0][4];
+	let sheet = DFSheet(data[2][3]);
+	sheet.playerName = data[6][3];
 	for (let row = 0; row < 3; row++) {
 		for (let column = 0; column < 3; column ++) {
 			sheet[attributes[column][row]] = parseInt(data[row+5][(column*3)+1]);
@@ -287,6 +273,8 @@ function parseSheet(data) {
 		}
 		mIndex++;
 	}
+
+	sheet.fate = parseInt(data[4][10]);
 
 	return sheet;
 }

@@ -8,7 +8,7 @@ function DFGame(gameState) {
 
 	return {
 		"keeper": dfk.DFKeeper(sheetId, process.env.BD_GOOGLECREDENTIALS),
-		"commands": ['roll','r'],
+		"commands": ['roll','r','fate'],
 		"hasCommand": function (command) {
 			return this.commands.includes(command);
 		},
@@ -22,8 +22,7 @@ function DFGame(gameState) {
 			console.log("DoCommand");
 
 			let character = context.character;
-			//let id = character.source;
-			let id = 0;
+			let id = character.source;
 			let args = context.args;
 			let msgDest = context.msgDest;
 			let msg = context.msg;
@@ -66,6 +65,33 @@ function DFGame(gameState) {
 						console.log(e);
 						msg.reply("Couldn't unambigiously find a stat of that name. Maybe check your spelling or make it less ambigious?");
 					}
+					break;
+				}
+				case 'fate': {
+					console.log(`Trying to adjust ${command}`);
+
+					let sheet = await keeper.getSheet(id);
+
+					let adjustment = args.join('').toLowerCase().replace(/\s+/g, '');
+					if (adjustment.charAt(0) == '+') {
+						adjustment = adjustment.slice(1);
+						sheet[command] += parseInt(adjustment);
+						keeper.setStat(id,command,sheet[command]);
+						msg.reply(`you added ${adjustment} to your ${command} (new amount: ${sheet[command]}).\r`);
+					} else if (adjustment.charAt(0) == '-') {
+						adjustment = adjustment.slice(1);
+						sheet[command] -= parseInt(adjustment);
+						keeper.setStat(id,command,sheet[command]);
+						msg.reply(`you removed ${adjustment} from your ${command} (new amount: ${sheet[command]}).\r`);
+					} else if ( Number.isInteger(parseInt(adjustment))) {
+						let oldValue = sheet[command];
+						sheet[command] = parseInt(adjustment);
+						keeper.setStat(id,command,sheet[command]);
+						msg.reply(`you set your ${command} to ${adjustment} (it used to be ${oldValue}).\r`);
+					} else {
+						msg.reply(`You have ${sheet.fate} fate points.`);
+					}
+
 					break;
 				}
 				default:
