@@ -8,7 +8,7 @@ function DFGame(gameState) {
 
 	return {
 		"keeper": dfk.DFKeeper(sheetId, process.env.BD_GOOGLECREDENTIALS),
-		"commands": ['roll','r','fate'],
+		"commands": ['roll','r','fate','f','sheet','help'],
 		"hasCommand": function (command) {
 			return this.commands.includes(command);
 		},
@@ -67,6 +67,7 @@ function DFGame(gameState) {
 					}
 					break;
 				}
+				case 'f':
 				case 'fate': {
 					console.log(`Trying to adjust ${command}`);
 
@@ -102,7 +103,14 @@ function DFGame(gameState) {
 		"getHelp": function() {
 			let help = "Commands:\r";
 			help += "```fix\r";
-			help += "/roll\t\t Roll Fate dice\r";
+			help += "/dm sheet\t\t\t DM you a copy of your character sheet\r";
+			help += "/f [+/-points]\t\tShow or adjust your fate points\r";
+			help += "/fate [+/-points]\t Show or adjust your fate points\r";
+			help += "/r [stat name]\t\tRoll Fate dice\r";
+			help += "/roll [stat name]\t Roll Fate dice\r";
+			help += "/sheet\t\t\t\tDisplay your character sheet in channel\r";
+			help += "\r";
+			help += "(parts of commands in [square brackets] are optional and not required)\r";
 			help += "```";
 			return help;
 		}
