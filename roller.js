@@ -68,6 +68,7 @@ function pbtaRoll(bonus) {
 function fateRoll(bonus) {
 	console.log(`Asked to roll Fate-style with ${bonus}`);
 	let total = bonus;
+	if (Number.isNaN(total)) total = 0;
 	let text = "";
 	for (let i = 0; i < 4; i++) {
 		let roll = rollDie(3) - 2;
