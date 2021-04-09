@@ -108,6 +108,11 @@ function DFSheet (name) {
 					fSheet += "\r";
 				}
 			}
+			fSheet += `\r`;
+			fSheet += `Physical: ${formatStressTrack(this.physical)}\r`;
+			fSheet += `Mental:   ${formatStressTrack(this.mental)}\r`;
+			fSheet += `Social:   ${formatStressTrack(this.social)}\r`;
+			fSheet += `\r`;
 			fSheet += `\rFate Points: \t ${this.fate}\r`;
 			fSheet += "```\r";
 			return fSheet;
@@ -119,6 +124,8 @@ function DFSheet (name) {
 				fSheet += `Vitae: \t\t ${this.vitae} / ${this.maxVitae}\r`;
 				fSheet += `Willpower: \t ${this.willpower} / ${this.maxWillpower}\r`;
 				fSheet += `Beats: \t\t ${this.beats} \t Experiences: ${this.experiences}\r`;
+				fSheet += `\r`;
+				fSheet += `Physical: ${formatStressTrack(this.physical)}\r`;
 				fSheet += "```\r";
 				return fSheet;
 		},
@@ -192,7 +199,43 @@ function parseSheet(data) {
 		sheet[skillName] = skillValue;
 	}
 
+	sheet.physical = {
+		capacity : data[18][16]
+	};
+	for (let slot = 1; slot <= sheet.physical.capacity; slot++)
+	{
+		if (data[18][9+slot] == '') {
+			sheet.physical[slot] = 0;
+		} else {
+			sheet.physical[slot] = 1;
+		}
+	}
+	sheet.mental = {
+		capacity : data[19][16]
+	};
+	for (let slot = 1; slot <= sheet.mental.capacity; slot++)
+	{
+		if (data[19][9+slot] == '') {
+			sheet.mental[slot] = 0;
+		} else {
+			sheet.mental[slot] = 1;
+		}
+	}
+	sheet.social = {
+		capacity : data[20][16]
+	};
+	
+	for (let slot = 1; slot <= sheet.social.capacity; slot++)
+	{
+		if (data[20][9+slot] == '') {
+			sheet.social[slot] = 0;
+		} else {
+			sheet.social[slot] = 1;
+		}
+	}
+
 	sheet.fate = parseInt(data[4][10]);
+
 
 	console.log(sheet);
 	return sheet;
@@ -208,6 +251,19 @@ function formatStat(stat, value) {
 	formattedString += "\t";
 	formattedString += value.toString().padEnd(2);
 	formattedString += "\t";
+	return formattedString;
+}
+
+function formatStressTrack(stress) {
+	let formattedString = "";
+	for (let i = 1; i <= stress.capacity; i++) {
+		if (stress[i] == 1) {
+			formattedString += "X";
+		} else {
+			formattedString += "O";
+		}
+	}
+
 	return formattedString;
 }
 
