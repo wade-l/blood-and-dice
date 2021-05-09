@@ -10,7 +10,7 @@ function ChangelingGame(gameState) {
 
 	return {
 		"keeper": ck.ChangelingKeeper('1jXdireyX3GkwGRziK7Vqo1O5kmQEYy2oH1IXqzAd-Zw', process.env.BD_GOOGLECREDENTIALS),
-		"commands": ['roll','r','roll8','r8','roll9','r9','sheet','stats','stat','asp','aspirations','conditions','health','willpower','beats','experiences','glamour'],
+		"commands": ['roll','r','roll8','r8','roll9','r9','sheet','stats','stat','asp','aspirations','conditions','health','willpower','beats','experiences','glamour','blessings'],
 		"hasCommand": function (command) {
 			return this.commands.includes(command);
 		},
@@ -65,6 +65,15 @@ function ChangelingGame(gameState) {
 					let sheetMessage = `Character Sheet for ${sheet.characterName} pulled from GoogleDocs:\r`;
 					sheetMessage += sheet.getFormattedSheet();
 					msgDest.send(sheetMessage);
+					break;
+				}
+				case 'blessings': {
+					let sheet = await keeper.getSheet(id);
+					console.log("Sheet:");
+					console.log(sheet);
+					let blessingMessage = `Blessings and Curses pulled from GoogleDocs:\r`;
+					blessingMessage += sheet.getFormattedBlessings();
+					msgDest.send(blessingMessage);
 					break;
 				}
 				case 'stats': {
@@ -157,6 +166,7 @@ function ChangelingGame(gameState) {
 			help += "```fix\r";
 			help += "/aspirations\t\tSee your aspirations\r";
 			help += "/asp\t\tSee your aspirations\r";
+			help += "/blessings\t\tSee your Seeming & Kith blessings\r";
 			help += "/conditions\t\tSee your conditions\r";
 			help += "/conditions\t\tSee your conditions\r";
 			help += "/dm <aspirations/conditions/sheet>\tSend you the information via DM\r";

@@ -327,7 +327,7 @@ async function getSheetData(characterName, sheetId, credentials) {
   	let characters =[];
   	let res = await sheets.spreadsheets.values.get({
     	spreadsheetId: sheetId,
-    	range: `${characterName}!C3:K53`,
+    	range: `${characterName}!C3:K60`,
  	});
  	let rows = res.data.values;
 	return rows;

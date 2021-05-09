@@ -42,6 +42,11 @@ function ChangelingKeeper(sheetId, credentials) {
 				}
 			}
 		}
+		sheet.kith = data[1][4];
+		sheet.seeming = data[1][1];
+		sheet.needle = data[2][0];
+		sheet.thread = data[2][4];
+		sheet.court = data[1][6];
 		sheet.willpower = parseInt(data[38][4]) || 0;
 		sheet.glamour = parseInt(data[38][1]) || 0;
 		sheet.maxGlamour = parseInt(data[38][2]) || 0;
@@ -55,6 +60,10 @@ function ChangelingKeeper(sheetId, credentials) {
 		sheet.woundPenalty = parseInt(data[42][1]) || 0;
 		sheet.aspirations = [ data[1][9], data[2][9], data[3][9]];
 		sheet.conditions = [];
+		sheet.seemingBlessing = data[51][1];
+		sheet.seemingCurse = data[52][1];
+		sheet.kithBlessing = data[53][1];
+		sheet.kithPower = data[54][1];
 
 		let conditionName = undefined;
 		let conditionText = undefined;
@@ -195,6 +204,20 @@ function ChangelingSheet (name) {
 				fSheet += healthString;
 				fSheet += "```\r";
 				return fSheet;
+		},
+		getFormattedBlessings: function () {
+			let fBlessings = "";
+			fBlessings += "```fix\r";
+			fBlessings += `Character: \t ${this.characterName}\tPlayer: \t${this.playerName}\r`;
+			fBlessings += `\rSeeming: ${this.seeming}\r`;
+			fBlessings += `Blessing: ${this.seemingBlessing}\r`;
+			fBlessings += `Curse: ${this.seemingCurse}\r`;
+			fBlessings += `\rKith: ${this.kith}\r`;
+			fBlessings += `Blessing: ${this.kithBlessing}\r`;
+			fBlessings += `Power: ${this.kithPower}\r`;
+
+			fBlessings += "```\r";
+			return fBlessings;
 		},
 		getStat: function (stat) {
 			let matchedStat = [];
