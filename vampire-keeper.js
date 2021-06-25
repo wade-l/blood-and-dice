@@ -145,6 +145,7 @@ function VampireSheet (name) {
 			}
 			
 			fSheet += "\r";
+			fSheet += "Disciplines                   Merits\r";
 
 			let maxRows = Math.max(4,this.disciplines.length, this.merits.length);
 			for (let i = 0; i < maxRows; i++) {
@@ -160,6 +161,7 @@ function VampireSheet (name) {
 				}
 				fSheet += "\r";
 			}
+			fSheet += "\r";
 			fSheet += `Vitae: \t\t ${this.vitae} / ${this.maxVitae}\r`;
 			fSheet += `Willpower: \t ${this.willpower} / ${this.maxWillpower}\r`;
 			fSheet += `Beats: \t\t ${this.beats} \t Experiences: ${this.experiences}\r`;
@@ -234,7 +236,7 @@ async function getSheetData(characterName, sheetId, credentials) {
   	let characters =[];
   	let res = await sheets.spreadsheets.values.get({
     	spreadsheetId: sheetId,
-    	range: `${characterName}!A1:K50`,
+    	range: `${characterName}!A1:O70`,
  	});
  	let rows = res.data.values;
 	return rows;
@@ -260,11 +262,15 @@ async function setSheetValue(value,cell,sheetName,sheetId,credentials) {
 }
 
 function parseSheet(data) {
-	let sheet = VampireSheet(data[0][1]);
-	sheet.playerName = data[0][4];
+	// Where (horizontally) the data starts
+	let hIndex = 2;
+	// Where (vertically) the data starts
+	let vIndex = 2;
+	let sheet = VampireSheet(data[vIndex + 0][hIndex + 1]);
+	sheet.playerName = data[vIndex + 0][hIndex+4];
 	for (let row = 0; row < 3; row++) {
-		for (let column = 0; column < 3; column ++) {
-			sheet[attributes[column][row]] = parseInt(data[row+5][(column*3)+1]);
+		for (let column = 0; column < 3; column ++) {			
+			sheet[attributes[column][row]] = parseInt(data[vIndex+row+5][(column*3)+1+hIndex]);
 		}
 	}
 	sheet.specialities = {};
@@ -272,32 +278,33 @@ function parseSheet(data) {
 	for (let row = 0; row < 8; row++) {
 		for (let column = 0; column < 3; column ++) {
 			let skillname = skills[column][row];
-			let skilldata = data[row+10][(column*3)+1];
+			let skilldata = data[vIndex+row+10][hIndex+(column*3)+1];
 			let skillvalue = parseInt(skilldata);
 			if (! (skillvalue > 0) ) skillvalue = 0;	
 			sheet[skillname] = skillvalue;
-			let speciality = data[row+10][(column*3)+2];
+			let speciality = data[vIndex+row+10][hIndex+(column*3)+2];
 			if (speciality) {
 				sheet.specialities[skillname] = speciality;
 			}
 		}
 	}
-	sheet.vitae = parseInt(data[23][7]);
-	sheet.maxVitae = parseInt(data[23][9]);
-	sheet.willpower = parseInt(data[21][7]);
-	sheet.maxWillpower = parseInt(data[21][9]);
-	sheet.experiences = parseInt(data[29][7]);
-	sheet.beats = parseInt(data[30][7]);
-	sheet.aspirations = [ data[1][9], data[2][9], data[3][9]];
+
+	sheet.vitae = parseInt(data[vIndex+37][hIndex+1]);
+	sheet.maxVitae = parseInt(data[vIndex+37][hIndex+2]);
+	sheet.willpower = parseInt(data[vIndex+37][hIndex+4]);
+	sheet.maxWillpower = parseInt(data[vIndex+37][hIndex+5]);
+	sheet.experiences = parseInt(data[vIndex+1][hIndex+7]);
+	sheet.beats = parseInt(data[vIndex][hIndex+7]);
+	sheet.aspirations = [ data[vIndex+20][hIndex+6], data[vIndex+21][hIndex+6], data[vIndex+22][hIndex+6]];
 	sheet.conditions = [];
 	let conditionName = undefined;
 	let conditionText = undefined;
 	let moreConditions = true;
-	let cIndex = 6;
+	let cIndex = 44;
 	while (moreConditions) {
-		conditionName = data[cIndex][9];
-		conditionText = data[cIndex][10];
-		if (typeof conditionName === "undefined") {
+		conditionName = data[vIndex+cIndex][hIndex+0];
+		conditionText = data[vIndex+cIndex][hIndex+1];
+		if (typeof conditionName === "undefined" || conditionName === "") {
 			moreConditions = false;
 		} else {
 			sheet.conditions.push({
@@ -314,12 +321,12 @@ function parseSheet(data) {
 	let moreDisciplines = true;
 	let dIndex = 20;
 		while (moreDisciplines) {
-		disciplineName = data[dIndex][0];
-		disciplineName = disciplineName.toString().toLowerCase();
-		disciplineRank = data[dIndex][1];
+		disciplineName = data[vIndex+dIndex][hIndex+0];		
+		disciplineRank = data[vIndex+dIndex][hIndex+1];
 		if ((typeof disciplineName === "undefined") || disciplineName.length < 1) {
 			moreDisciplines = false;
 		} else {
+			disciplineName = disciplineName.toString().toLowerCase();
 			sheet.disciplines.push({
 				name: disciplineName,
 				value: disciplineRank
@@ -334,8 +341,8 @@ function parseSheet(data) {
 	let moreMerits = true;
 	let mIndex = 20;
 	while (moreMerits) {
-		meritName = data[mIndex][3];
-		meritRank = data[mIndex][4];
+		meritName = data[vIndex+mIndex][hIndex+3];
+		meritRank = data[vIndex+mIndex][hIndex+4];
 		if ((typeof meritName === "undefined") || meritName.length < 1) {
 			moreMerits = false;
 		} else {
