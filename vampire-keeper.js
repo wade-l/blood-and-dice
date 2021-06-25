@@ -154,7 +154,7 @@ function VampireSheet (name) {
 				} else {
 					fSheet += formatStat("","");
 				}
-				if (typeof this.merits[i] != 'undefined') {
+				if (typeof this.merits[i] != 'undefined' && typeof this.merits[i].value != 'undefined') {
 					fSheet += formatStat(this.merits[i].name, this.merits[i].value);
 				} else {
 					fSheet += formatStat("","");
