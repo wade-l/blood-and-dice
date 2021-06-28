@@ -96,7 +96,6 @@ function VampireKeeper(sheetId, credentials) {
 				rollText+= ` (${totalDice} dice total)`;
 			}
 
-
 			let roll = roller.rollPool(totalDice, again);
 			rollText += `: ${roll.text} `;
 			if (roll.successes >= 5) {
@@ -297,15 +296,22 @@ function parseSheet(data) {
 	sheet.beats = parseInt(data[vIndex][hIndex+7]);
 	sheet.aspirations = [ data[vIndex+20][hIndex+6], data[vIndex+21][hIndex+6], data[vIndex+22][hIndex+6]];
 	sheet.conditions = [];
+
 	let conditionName = undefined;
 	let conditionText = undefined;
 	let moreConditions = true;
 	let cIndex = 44;
-	while (moreConditions) {
-		conditionName = data[vIndex+cIndex][hIndex+0];
-		conditionText = data[vIndex+cIndex][hIndex+1];
+
+	while (moreConditions) {		
+		if (typeof[vIndex+cIndex] === "undefined") {
+			conditionName = undefinied;
+		} else {
+			conditionName = data[vIndex+cIndex][hIndex+0];
+		}
+
 		if (typeof conditionName === "undefined" || conditionName === "") {
 			moreConditions = false;
+			conditionText = data[vIndex+cIndex][hIndex+1];
 		} else {
 			sheet.conditions.push({
 				name: conditionName,
