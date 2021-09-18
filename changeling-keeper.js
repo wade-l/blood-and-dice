@@ -83,27 +83,33 @@ function ChangelingKeeper(sheetId, credentials) {
 			cIndex++;
 		}
 
-		sheet.disciplines = [];
+		sheet.contracts = [];
 
-		let disciplineName = undefined;
-		let disciplineRank = undefined;
-		let moreDisciplines = true;
-		let dIndex = 20;
-			while (moreDisciplines) {
-			disciplineName = data[dIndex][0];
-			if ((typeof disciplineName != "undefined")) {
-				disciplineName = disciplineName.toString().toLowerCase();
-			}
-			disciplineRank = data[dIndex][1];
-			if ((typeof disciplineName === "undefined") || disciplineName.length < 1) {
-				moreDisciplines = false;
+		let contractName = undefined;
+		let moreContracts = true;
+		cIndex = 45;
+		let r = 0;
+		while (moreContracts) {
+			contractName = data[cIndex][r];
+			if ((typeof contractName != "undefined") && contractName.length > 1) {
+				let contract = {
+					name: contractName,
+					regalia: data[cIndex][r+1],
+					rank: data[cIndex][r+2],
+					effects: data[cIndex][r+3],
+					cost: data[cIndex][r+4],
+					dicepool: data[cIndex][r+5],
+					action: data[cIndex][r+6],
+					duration: data[cIndex][r+7],
+					seemings: data[cIndex][r+8],
+					loophole: data[cIndex][r+10]
+				}
+				sheet.contracts.push(contract);
+
+				cIndex++;
 			} else {
-				sheet.disciplines.push({
-					name: disciplineName,
-					value: disciplineRank
-				});
+				moreContracts = false;
 			}
-			dIndex++;
 		}
 
 		sheet.merits = [];
@@ -167,10 +173,10 @@ function ChangelingSheet (name) {
 			
 			fSheet += "\r";
 
-			let maxRows = Math.max(4,this.disciplines.length, this.merits.length);
+			let maxRows = Math.max(4,this.contracts.length, this.merits.length);
 			for (let i = 0; i < maxRows; i++) {
-				if (typeof this.disciplines[i] != 'undefined') {
-					fSheet += formatStat(this.disciplines[i].name, this.disciplines[i].value);
+				if (typeof this.contracts[i] != 'undefined') {
+					fSheet += formatStat(this.contracts[i].name, "");
 				} else {
 					fSheet += formatStat("","");
 				}
@@ -204,6 +210,25 @@ function ChangelingSheet (name) {
 				fSheet += healthString;
 				fSheet += "```\r";
 				return fSheet;
+		},
+		getFormattedContracts: function () {
+				let fContracts = "";
+				let nContracts = this.contracts.length;
+				for (let i = 0; i < nContracts; i++) {
+					let contract = this.contracts[i];
+					fContracts += "**" + contract.name + "**\n";
+					fContracts += "Regalia: " + contract.regalia + " (" + contract.rank + ")\n";
+					fContracts += "Description: \n" + contract.effects + "\n";
+					fContracts += "Cost: " + contract.cost + "\n";
+					fContracts += "Dice Pool: " + contract.dicepool + "\n";
+					fContracts += "Action: " + contract.action + "\n";
+					fContracts += "Duration: " + contract.duration + "\n";
+					fContracts += "Loophole: " + contract.loophole + "\n";
+					fContracts += "Seeming Benefits:\n" + contract.seemings;
+					fContracts += "\n";
+				}
+				return fContracts;
+
 		},
 		getFormattedBlessings: function () {
 			let fBlessings = "";

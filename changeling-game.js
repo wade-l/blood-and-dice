@@ -10,7 +10,7 @@ function ChangelingGame(gameState) {
 
 	return {
 		"keeper": ck.ChangelingKeeper('1jXdireyX3GkwGRziK7Vqo1O5kmQEYy2oH1IXqzAd-Zw', process.env.BD_GOOGLECREDENTIALS),
-		"commands": ['roll','r','roll8','r8','roll9','r9','sheet','stats','stat','asp','aspirations','conditions','health','willpower','beats','experiences','glamour','blessings'],
+		"commands": ['roll','r','roll8','r8','roll9','r9','sheet','stats','stat','asp','aspirations','conditions','health','willpower','beats','experiences','glamour','blessings','contracts'],
 		"hasCommand": function (command) {
 			return this.commands.includes(command);
 		},
@@ -106,6 +106,13 @@ function ChangelingGame(gameState) {
 					msgDest.send(replyText);
 					break;
 				}
+				case 'contracts': {
+					let sheet = await keeper.getSheet(id);
+					let replyText = `Contracts for ${sheet.characterName}:\r`;
+					replyText += sheet.getFormattedContracts();
+					msgDest.send(replyText);
+					break;
+				}				
 				case 'conditions': {
 					let sheet = await keeper.getSheet(id);
 					let conditionsText = formatConditions(sheet);
