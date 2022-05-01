@@ -8,7 +8,7 @@ function RootGame(gameState) {
 
 	return {
 		//"keeper": mhk.MonsterHeartsKeeper(sheetId, process.env.BD_GOOGLECREDENTIALS),
-		"commands": ['roll','r']//oll8','roll9','sheet','stats','stat','asp','aspirations','conditions','vitae','health','willpower','beats','experiences'],
+		"commands": ['roll','r'],//oll8','roll9','sheet','stats','stat','asp','aspirations','conditions','vitae','health','willpower','beats','experiences'],
 		"hasCommand": function (command) {
 			return this.commands.includes(command);
 		},
@@ -31,8 +31,10 @@ function RootGame(gameState) {
 				case 'r':
 				case 'roll': {
 					try {
-						let rollText = await keeper.roll(args.join(" ").toLowerCase(),id);
-						msgDest.send(`${msg.member} rolled ${rollText}`);
+						//let rollText = await keeper.roll(args.join(" ").toLowerCase(),id);
+						let rollText = roller.pbtaRoll(0);
+						console.log(rollText);
+						msgDest.send(`${msg.member} rolled ${rollText.dice} totalling ${rollText.total}`);
 					} catch (err) {
 						msg.reply(`Sorry, your roll encountered a problem (${err})`);
 					}

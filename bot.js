@@ -11,7 +11,7 @@ const cg = require("./changeling-game.js");
 const ttg = require("./tangled-game.js");
 const pbtag = require("./generic-pbta.js");
 const dfg= require("./dfrpg-game.js");
-const rootg = require("./root-game.js");
+const rootgame = require("./root-game.js");
 
 const DB_URI = process.env.BD_DBURI;
 console.log(`Prefix is ${process.env.BD_PREFIX}`);
@@ -72,7 +72,7 @@ client.on('message', async msg => {
 			break;
 		case 'Root':
 			console.log("Playing Root");
-			game = root-game.RootGame(gameState);
+			game = rootgame.RootGame(gameState);
 			break;
 	}
 
