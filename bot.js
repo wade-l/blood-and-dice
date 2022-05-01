@@ -2,7 +2,8 @@
 "use strict";
 const Discord = require('discord.js');
 const db = require("./mongoose-connection.js");
-const client = new Discord.Client();
+const { Client, Intents } = require('discord.js');
+
 const vg = require("./vampire-game.js")
 const mhg = require("./monsterhearts-game.js");
 const dwg = require("./dungeonworld-game.js");
@@ -10,18 +11,24 @@ const cg = require("./changeling-game.js");
 const ttg = require("./tangled-game.js");
 const pbtag = require("./generic-pbta.js");
 const dfg= require("./dfrpg-game.js");
+const rootg = require("./root-game.js");
 
 const DB_URI = process.env.BD_DBURI;
+console.log(`Prefix is ${process.env.BD_PREFIX}`);
 const PREFIX = process.env.BD_PREFIX;
 const TOKEN = process.env.BD_TOKEN;
+
+const client = new Client({intents: ["DIRECT_MESSAGES","GUILD_MESSAGES", Intents.FLAGS.GUILDS]});
 
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.tag}!`);
 	client.user.setActivity(`Rolling Dice`);
 });
 
+
 client.on('message', async msg => {
 	console.log(`Received message: ${msg.content}`);
+	console.log(msg);
 
 	// Ignore bots
 	if (msg.author.bot) return;
@@ -49,6 +56,7 @@ client.on('message', async msg => {
 		case 'Changeling: the Lost':
 			console.log("Playing Changeling");
 			game = cg.ChangelingGame(gameState);
+			console.log("Done creating game");
 			break;
 		case 'Tangled Threads':
 			console.log("Playing Tangled Threads");
@@ -62,14 +70,21 @@ client.on('message', async msg => {
 			console.log("Playing DFRPG");
 			game = dfg.DFGame(gameState);
 			break;
+		case 'Root':
+			console.log("Playing Root");
+			game = root-game.RootGame(gameState);
+			break;
 	}
 
+	console.log(`About to check to see if message starts with prefix: ${msg.content} \n PREFIX:  ${PREFIX}`);
 	// Ignore anything that doesn't start with our prefix
 	if (msg.content.indexOf(PREFIX) !== 0) return;
 
+	console.log("About to get character");
 	let userId = msg.member.id;
 	let character = gameState.characters.get(userId);
 
+	console.log("About to grab channel");
 	// Grab the channel we'll send messages to
 	let msgDest = msg.channel;
 
@@ -80,6 +95,8 @@ client.on('message', async msg => {
 		msgDest = msg.author;
 		command = args.shift().toLowerCase();
 	}
+
+	console.log('Command is' + command);
 
 	switch (command) {
 		case 'ping':
