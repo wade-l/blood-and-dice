@@ -14,10 +14,10 @@ function DFGame(gameState) {
 		},
 		"doCommand": async function(command, context) {
 			
-			//if (context.character === undefined) {
-			//	context.msg.reply("sorry, you don't appear to have a character assigned to you.");
-			//	return;
-			//}
+			if (context.character === undefined) {
+				context.msg.reply("sorry, you don't appear to have a character assigned to you.");
+				return;
+			}
 
 			console.log("DoCommand");
 

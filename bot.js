@@ -38,8 +38,6 @@ client.on('message', async msg => {
 	console.log(`Looking up ${msg.channel.guild.id} guild in ${msg.channel.id} channel...`);
 	let gameState = await db.getGame(DB_URI, msg.channel.guild.id, msg.channel.id);
 
-	console.log(gameState);
-
 	switch (gameState.system) {
 		case 'Requiem':
 			console.log("Playing Vampire");
@@ -73,6 +71,10 @@ client.on('message', async msg => {
 		case 'Root':
 			console.log("Playing Root");
 			game = rootgame.RootGame(gameState);
+			break;
+		default:
+			console.log("Playing DFRPG");
+			game = dfg.DFGame(gameState);
 			break;
 	}
 
