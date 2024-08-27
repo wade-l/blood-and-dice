@@ -10,11 +10,11 @@ const skills = ['flair','focus','force','guile','haste','intellect'];
 
 function DFKeeper(sheetId, credentials) {
 	return {
-		'sheetId' : sheetId,
+		//'sheetId' : sheetId,
+		'sheetId': "1hdhbvdWjfQ8ETV_qJx_ZxceSvKFSVrsKSfoIM7Llogw",
 		'credentials': credentials,
 		getSheet: async function(id) {
 			console.log("Getting sheet for " + id);
-			let sheetId = "1hdhbvdWjfQ8ETV_qJx_ZxceSvKFSVrsKSfoIM7Llogw";
 			let characterData = await getSheetData(id, sheetId, credentials);
 			return parseSheet(characterData);
 		},
@@ -26,7 +26,7 @@ function DFKeeper(sheetId, credentials) {
 					break;
 			}
 			if (typeof cellId != "undefined") {
-				await setSheetValue(value,cellId,id,sheetId,credentials);
+				await setSheetValue(value,cellId,id,"1hdhbvdWjfQ8ETV_qJx_ZxceSvKFSVrsKSfoIM7Llogw",credentials);
 			}
 		},
 		roll: async function (rollString, characterId, again = 10) {
@@ -162,7 +162,7 @@ async function getSheetData(characterName, sheetId, credentials) {
 	const sheets = google.sheets({version: 'v4', auth});
   	let characters =[];
   	let res = await sheets.spreadsheets.values.get({
-    	spreadsheetId: sheetId,
+    	spreadsheetId: "1hdhbvdWjfQ8ETV_qJx_ZxceSvKFSVrsKSfoIM7Llogw",
     	range: `${characterName}!A1:Z50`,
  	});
  	let rows = res.data.values;
@@ -178,7 +178,7 @@ async function setSheetValue(value,cell,sheetName,sheetId,credentials) {
 		]
 	};
 	sheets.spreadsheets.values.update({
-		spreadsheetId: sheetId,
+		spreadsheetId: "1hdhbvdWjfQ8ETV_qJx_ZxceSvKFSVrsKSfoIM7Llogw",
 		range: range,
 		valueInputOption: 'RAW',
 		resource: body
@@ -192,6 +192,7 @@ function parseSheet(data) {
 	let sheet = DFSheet(data[3][2]);
 	sheet.playerName = data[3][6];
 	sheet.characterName = data[3][2];
+	console.log(`Flair is ${data[6][6]} or ${parseInt(data[6][6])}`)
 	sheet['flair'] = parseInt(data[6][6])
 	sheet['focus'] = parseInt(data[10][6])
 	sheet['force'] = parseInt(data[14][6])
@@ -205,41 +206,6 @@ function parseSheet(data) {
 		if (! (skillValue > 0) ) skillValue = 0;
 		sheet[skillName] = skillValue;
 	}*/
-
-	sheet.physical = {
-		capacity : data[18][16]
-	};
-	for (let slot = 1; slot <= sheet.physical.capacity; slot++)
-	{
-		if (data[18][9+slot] == '') {
-			sheet.physical[slot] = 0;
-		} else {
-			sheet.physical[slot] = 1;
-		}
-	}
-	sheet.mental = {
-		capacity : data[19][16]
-	};
-	for (let slot = 1; slot <= sheet.mental.capacity; slot++)
-	{
-		if (data[19][9+slot] == '') {
-			sheet.mental[slot] = 0;
-		} else {
-			sheet.mental[slot] = 1;
-		}
-	}
-	sheet.social = {
-		capacity : data[20][16]
-	};
-	
-	for (let slot = 1; slot <= sheet.social.capacity; slot++)
-	{
-		if (data[20][9+slot] == '') {
-			sheet.social[slot] = 0;
-		} else {
-			sheet.social[slot] = 1;
-		}
-	}
 
 	sheet.fate = parseInt(data[4][10]);
 
