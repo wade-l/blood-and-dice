@@ -6,7 +6,7 @@ const Discord = require('discord.js');
 const roller = require("./roller.js");
 
 const ladder = ['Terrible','Poor','Mediocre','Average','Fair','Good','Great','Superb','Fantastic','Epic','Legendary'];
-const skills = ['alertness','athletics','burglary','contacts','conviction','craftsmanship','deceit','discipline','driving','empathy','endurance','fists','guns','intimidation','investigation','lore','might','performance','presence','rapport','resources','scholarship','stealth','survival','weapons'];
+const skills = ['flair','focus','force','guile','haste','intellect'];
 
 function DFKeeper(sheetId, credentials) {
 	return {
@@ -14,6 +14,7 @@ function DFKeeper(sheetId, credentials) {
 		'credentials': credentials,
 		getSheet: async function(id) {
 			console.log("Getting sheet for " + id);
+			let sheetId = "1hdhbvdWjfQ8ETV_qJx_ZxceSvKFSVrsKSfoIM7Llogw";
 			let characterData = await getSheetData(id, sheetId, credentials);
 			return parseSheet(characterData);
 		},
@@ -191,13 +192,19 @@ function parseSheet(data) {
 	let sheet = DFSheet(data[3][2]);
 	sheet.playerName = data[3][6];
 	sheet.characterName = data[3][2];
-	for (let row = 0; row < 25; row++) {
+	sheet['flair'] = parseInt(data[6][6])
+	sheet['focus'] = parseInt(data[10][6])
+	sheet['force'] = parseInt(data[14][6])
+	sheet['guile'] = parseInt(data[18][6])
+	sheet['haste'] = parseInt(data[22][6])
+	sheet['intellect'] = parseInt(data[26][6])
+	/*for (let row = 0; row < 25; row++) {
 		let skillName = skills[row];
 		let skillData = data[6+row][7]
 		let skillValue = parseInt(skillData);
 		if (! (skillValue > 0) ) skillValue = 0;
 		sheet[skillName] = skillValue;
-	}
+	}*/
 
 	sheet.physical = {
 		capacity : data[18][16]
